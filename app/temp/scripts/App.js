@@ -51,136 +51,208 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var tiles = {
-	  aqua: "#00ffff",
-	  azure: "#f0ffff",
-	  beige: "#f5f5dc",
-	  black: "#000000",
-	  blue: "#0000ff",
-	  brown: "#a52a2a",
-	  cyan: "#00ffff",
-	  darkblue: "#00008b",
-	  darkcyan: "#008b8b",
-	  darkgrey: "#a9a9a9",
-	  darkgreen: "#006400",
-	  darkkhaki: "#bdb76b",
-	  darkmagenta: "#8b008b",
-	  darkolivegreen: "#556b2f",
-	  darkorange: "#ff8c00",
-	  darkorchid: "#9932cc",
-	  darkred: "#8b0000",
-	  darksalmon: "#e9967a",
-	  darkviolet: "#9400d3",
-	  fuchsia: "#ff00ff",
-	  gold: "#ffd700",
-	  green: "#008000",
-	  indigo: "#4b0082",
-	  khaki: "#f0e68c",
-	  lightblue: "#add8e6",
-	  lightcyan: "#e0ffff",
-	  lightgreen: "#90ee90",
-	  lightgrey: "#d3d3d3",
-	  lightpink: "#ffb6c1",
-	  lightyellow: "#ffffe0",
-	  lime: "#00ff00",
-	  magenta: "#ff00ff",
-	  maroon: "#800000",
-	  navy: "#000080",
-	  olive: "#808000",
-	  orange: "#ffa500",
-	  pink: "#ffc0cb",
-	  purple: "#800080",
-	  violet: "#800080",
-	  red: "#ff0000",
-	  silver: "#c0c0c0",
-	  white: "#ffffff",
-	  yellow: "#ffff00"
+		aqua: "#00ffff",
+		azure: "#f0ffff",
+		beige: "#f5f5dc",
+		black: "#000000",
+		blue: "#0000ff",
+		brown: "#a52a2a",
+		cyan: "#00ffff",
+		darkblue: "#00008b",
+		darkcyan: "#008b8b",
+		darkgrey: "#a9a9a9",
+		darkgreen: "#006400",
+		darkkhaki: "#bdb76b",
+		darkmagenta: "#8b008b",
+		darkolivegreen: "#556b2f",
+		darkorange: "#ff8c00",
+		darkorchid: "#9932cc",
+		darkred: "#8b0000",
+		darksalmon: "#e9967a",
+		darkviolet: "#9400d3",
+		fuchsia: "#ff00ff",
+		gold: "#ffd700",
+		green: "#008000",
+		indigo: "#4b0082",
+		khaki: "#f0e68c",
+		lightblue: "#add8e6",
+		lightcyan: "#e0ffff",
+		lightgreen: "#90ee90",
+		lightgrey: "#d3d3d3",
+		lightpink: "#ffb6c1",
+		lightyellow: "#ffffe0",
+		lime: "#00ff00",
+		magenta: "#ff00ff",
+		maroon: "#800000",
+		navy: "#000080",
+		olive: "#808000",
+		orange: "#ffa500",
+		pink: "#ffc0cb",
+		purple: "#800080",
+		violet: "#800080",
+		red: "#ff0000",
+		silver: "#c0c0c0",
+		white: "#ffffff",
+		yellow: "#ffff00"
 	};
 
 	// alert(Object.keys(tiles).length);
 
 	var Grid = function () {
-	  function Grid(settings, data) {
-	    _classCallCheck(this, Grid);
+		function Grid(settings, data) {
+			_classCallCheck(this, Grid);
 
-	    this.canvas = document.getElementById(settings.selector);
-	    this.ctx = this.canvas.getContext('2d');
+			this.slotsX = settings.slots.x;
+			this.slotsY = settings.slots.y;
+			this.totalSlots = this.slotsX * this.slotsY;
+			this.slotSize = settings.slotSize;
+			this.allTechs = [];
+			this.offGridTechs = [];
+			this.initData(data);
+			this.virtualGrid = this.createVirtualGrid();
+		}
 
-	    this.slotsX = settings.slots.x;
-	    this.slotsY = settings.slots.y;
-	    this.totalSlots = this.slotsX * this.slotsY;
-	    this.slotSize = settings.slotSize;
+		_createClass(Grid, [{
+			key: "initData",
+			value: function initData(data) {
+				for (var key in data) {
+					var tile = new Tile(key, data[key], null, null);
+					this.allTechs.push(tile);
+				}
+			}
+		}, {
+			key: "storeRemaingingTechs",
+			value: function storeRemaingingTechs(idx) {
+				for (var i = idx; i < this.allTechs.length; i++) {
+					this.offGridTechs.push(this.allTechs[i]);
+				}
+			}
+		}, {
+			key: "createVirtualGrid",
+			value: function createVirtualGrid() {
+				var vGrid = [];
+				var row = [];
+				var idx = 0;
 
-	    this.allTechs = [];
-	    this.inGridTechs = [];
-	    this.offGridTechs = [];
-	    this.initData(data);
+				for (var i = 0; i <= this.slotsY + 1; i++) {
+					for (var j = 0; j <= this.slotsX + 1; j++) {
+						var newTile;
 
-	    this.virtualGrid = this.createVirtualGrid();
+						if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
+							newTile = this.allTechs[idx];
+							idx++;
+						} else newTile = new Tile(null, null, null, null);
 
-	    this.initGrid();
-	  }
+						newTile.size = this.slotSize;
+						newTile.virtualCoords = { x: j, y: i };
+						newTile.initRealCoords();
 
-	  _createClass(Grid, [{
-	    key: "initData",
-	    value: function initData(data) {
-	      for (var key in data) {
-	        this.allTechs.push({ name: key, tech: data[key] });
-	      }
+						row.push(newTile);
+					}
 
-	      for (var i = 0; i < this.allTechs.length; i++) {
+					vGrid.push(row);
+					row = [];
+				}
 
-	        var tech = this.allTechs[i];
+				this.storeRemaingingTechs(idx);
 
-	        if (i < this.totalSlots) this.inGridTechs.push(tech);else this.offGridTechs.push(tech);
-	      }
-	    }
-	  }, {
-	    key: "initGrid",
-	    value: function initGrid() {
-	      this.canvas.width = this.slotsX * this.slotSize;
-	      this.canvas.height = this.slotsY * this.slotSize;
-	    }
-	  }, {
-	    key: "createVirtualGrid",
-	    value: function createVirtualGrid() {
-	      var vGrid = [];
-	      var row = [];
-	      var idx = 0;
+				return vGrid;
+			}
+		}, {
+			key: "returnRandomTech",
+			value: function returnRandomTech() {
+				return this.offGridTechs[Math.floor(Math.random() * this.offGridTechs.length)];
+			}
+		}]);
 
-	      for (var i = 0; i <= this.slotsY + 1; i++) {
-	        for (var j = 0; j <= this.slotsX + 1; j++) {
-	          var slotFill = {};
-	          var coords = { x: j, y: i };
+		return Grid;
+	}();
 
-	          if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
-	            slotFill = this.inGridTechs[idx];
-	            idx++;
-	          }
+	var Tile = function () {
+		function Tile(name, tech, size, vCoords) {
+			_classCallCheck(this, Tile);
 
-	          slotFill.coords = coords;
+			this.name = name;
+			this.tech = tech;
+			this.size = size;
+			this.virtualCoords = vCoords;
+		}
 
-	          row.push(slotFill);
-	        }
+		_createClass(Tile, [{
+			key: "initRealCoords",
+			value: function initRealCoords() {
+				this.realCoords = { x: (this.virtualCoords.x - 1) * this.size, y: (this.virtualCoords.y - 1) * this.size };
+			}
+		}, {
+			key: "calcNewCoords",
+			value: function calcNewCoords() {}
+		}]);
 
-	        vGrid.push(row);
-	        row = [];
-	      }
+		return Tile;
+	}();
 
-	      return vGrid;
-	    }
-	  }]);
+	var GridManager = function () {
+		function GridManager(grid, selector) {
+			_classCallCheck(this, GridManager);
 
-	  return Grid;
+			this.grid = grid;
+			this.canvas = document.getElementById(selector);
+			this.ctx = this.canvas.getContext('2d');
+
+			this.initGrid();
+			this.populateGrid();
+		}
+
+		_createClass(GridManager, [{
+			key: "initGrid",
+			value: function initGrid() {
+				this.canvas.width = this.grid.slotsX * this.grid.slotSize;
+				this.canvas.height = this.grid.slotsY * this.grid.slotSize;
+			}
+		}, {
+			key: "populateGrid",
+			value: function populateGrid() {
+				for (var i = 0; i < this.grid.virtualGrid.length; i++) {
+					for (var j = 0; j < this.grid.virtualGrid[i].length; j++) {
+						if (this.grid.virtualGrid[i][j].hasOwnProperty("name")) {
+							var slotElement = this.grid.virtualGrid[i][j];
+							this.drawTile(slotElement.realCoords.x, slotElement.realCoords.y, slotElement.size, slotElement.tech);
+						}
+					}
+				}
+			}
+		}, {
+			key: "drawTile",
+			value: function drawTile(x, y, size, color) {
+				this.ctx.fillStyle = color;
+				this.ctx.fillRect(x, y, size, size);
+			}
+		}, {
+			key: "prepRow",
+			value: function prepRow(rowIdx, dir) {
+				var row = this.grid.virtualGrid[rowIdx];
+				var slotToPopulate = dir == -1 ? 0 : row.length - 1;
+				var newTech = this.grid.returnRandomTech();
+				newTech.virtualCoords = { x: slotToPopulate, y: rowIdx };
+				newTech.realCoords = { x: slotToPopulate, y: rowIdx };
+				row[slotToPopulate] = this.grid.returnRandomTech();
+			}
+		}, {
+			key: "updateRow",
+			value: function updateRow() {}
+		}]);
+
+		return GridManager;
 	}();
 
 	document.addEventListener('DOMContentLoaded', function () {
 
-	  var settings = { selector: 'tech-grid',
-	    slots: { x: 5, y: 5 },
-	    slotSize: 100
-	  };
+		var settings = { slots: { x: 5, y: 5 },
+			slotSize: 100
+		};
 
-	  var mainGrid = new Grid(settings, tiles);
+		var mainGrid = new Grid(settings, tiles);
+		var gridManager = new GridManager(mainGrid, 'tech-grid');
 	});
 
 /***/ })
