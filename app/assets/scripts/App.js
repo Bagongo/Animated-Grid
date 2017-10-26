@@ -54,8 +54,7 @@ class Grid {
     this.slotsX = settings.slots.x;
     this.slotsY = settings.slots.y;
     this.totalSlots = this.slotsX * this.slotsY;
-
-    this.slotSize = this.canvas.width / this.slotsX;
+    this.slotSize = settings.slotSize;
 
     this.allTechs = [];
     this.inGridTechs = [];
@@ -63,6 +62,8 @@ class Grid {
     this.initData(data);
 
     this.virtualGrid = this.createVirtualGrid();
+
+    this.initGrid();
   }
 
   initData(data)
@@ -80,20 +81,53 @@ class Grid {
 		else
 			this.offGridTechs.push(tech);
 	}
+  }
 
-	console.log(this.allTechs, this.inGridTechs, this.offGridTechs);
+  initGrid()
+  {
+  	this.canvas.width = this.slotsX * this.slotSize;
+  	this.canvas.height = this.slotsY * this.slotSize;
   }
 
   createVirtualGrid()
   {
-  	let vGrid = [];
+  	var vGrid = [];
+  	var row = [];
+  	var idx = 0;
 
-  	// for()
+  	for(let i=0; i <= this.slotsY + 1; i++)
+  	{
+		for(let j=0; j <= this.slotsX + 1; j++)
+		{
+			var slotFill = {};
+			var coords = {x:j, y:i};
+
+			if(i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1){
+				slotFill = this.inGridTechs[idx];
+				idx++;
+			}
+			
+			slotFill.coords = coords;
+
+			row.push(slotFill);
+		}
+
+		vGrid.push(row);
+		row = [];
+  	}
+  	
+  	return vGrid;
   }
+
 }
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  const mainGrid = new Grid({selector:'tech-grid', slots:{x:5, y:5}}, tiles);
+	let settings = {selector:'tech-grid', 
+					slots:{x:5, y:5},
+					slotSize: 100
+				};
+
+  const mainGrid = new Grid(settings, tiles);
 
 });

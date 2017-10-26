@@ -108,8 +108,7 @@
 	    this.slotsX = settings.slots.x;
 	    this.slotsY = settings.slots.y;
 	    this.totalSlots = this.slotsX * this.slotsY;
-
-	    this.slotSize = this.canvas.width / this.slotsX;
+	    this.slotSize = settings.slotSize;
 
 	    this.allTechs = [];
 	    this.inGridTechs = [];
@@ -117,6 +116,8 @@
 	    this.initData(data);
 
 	    this.virtualGrid = this.createVirtualGrid();
+
+	    this.initGrid();
 	  }
 
 	  _createClass(Grid, [{
@@ -132,15 +133,40 @@
 
 	        if (i < this.totalSlots) this.inGridTechs.push(tech);else this.offGridTechs.push(tech);
 	      }
-
-	      console.log(this.allTechs, this.inGridTechs, this.offGridTechs);
+	    }
+	  }, {
+	    key: "initGrid",
+	    value: function initGrid() {
+	      this.canvas.width = this.slotsX * this.slotSize;
+	      this.canvas.height = this.slotsY * this.slotSize;
 	    }
 	  }, {
 	    key: "createVirtualGrid",
 	    value: function createVirtualGrid() {
 	      var vGrid = [];
+	      var row = [];
+	      var idx = 0;
 
-	      // for()
+	      for (var i = 0; i <= this.slotsY + 1; i++) {
+	        for (var j = 0; j <= this.slotsX + 1; j++) {
+	          var slotFill = {};
+	          var coords = { x: j, y: i };
+
+	          if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
+	            slotFill = this.inGridTechs[idx];
+	            idx++;
+	          }
+
+	          slotFill.coords = coords;
+
+	          row.push(slotFill);
+	        }
+
+	        vGrid.push(row);
+	        row = [];
+	      }
+
+	      return vGrid;
 	    }
 	  }]);
 
@@ -149,7 +175,12 @@
 
 	document.addEventListener('DOMContentLoaded', function () {
 
-	  var mainGrid = new Grid({ selector: 'tech-grid', slots: { x: 5, y: 5 } }, tiles);
+	  var settings = { selector: 'tech-grid',
+	    slots: { x: 5, y: 5 },
+	    slotSize: 100
+	  };
+
+	  var mainGrid = new Grid(settings, tiles);
 	});
 
 /***/ })
