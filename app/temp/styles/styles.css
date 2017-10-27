@@ -19,8 +19,14 @@ body, html{
 	background: aquamarine;
 }
 
-#tech-grid{
+#main-grid{
+	position: relative;
+	overflow: visible;
 	background: black;
-   box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
+}
+
+.tile{
+	position: absolute;
 }
 

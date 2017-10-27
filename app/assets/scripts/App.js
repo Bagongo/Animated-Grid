@@ -62,7 +62,7 @@ class Grid {
   initData(data)
   {
   	for (let key in data) {
-  		let tile = new Tile(key, data[key], null, null);
+  		let tile = new Tile(key, data[key], this.slotSize, null);
 		this.allTechs.push(tile);
 	}
   }
@@ -83,7 +83,7 @@ class Grid {
   	{
 		for(let j=0; j <= this.slotsX + 1; j++)
 		{
-			var newTile;
+			var newTile = {};
 
 			if(i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1){
 				newTile = this.allTechs[idx];
@@ -92,7 +92,6 @@ class Grid {
 			else
 				newTile = new Tile(null, null, null, null);
 			
-			newTile.size = this.slotSize;
 			newTile.virtualCoords = {x: j, y: i};
 			newTile.initRealCoords();
 
@@ -138,8 +137,7 @@ class GridManager {
 
 	constructor(grid, selector){
 		this.grid = grid;
-		this.canvas = document.getElementById(selector);
-	    this.ctx = this.canvas.getContext('2d');
+		this.frame = document.getElementById(selector);
 
 	    this.initGrid();
 	    this.populateGrid();
@@ -147,8 +145,8 @@ class GridManager {
 
 	initGrid()
 	{
-		this.canvas.width = this.grid.slotsX * this.grid.slotSize;
-		this.canvas.height = this.grid.slotsY * this.grid.slotSize;
+		this.frame.style.width = (this.grid.slotsX * this.grid.slotSize) + "px";
+		this.frame.style.height = (this.grid.slotsY * this.grid.slotSize) + "px";
 	}
 
 	populateGrid()
@@ -157,7 +155,7 @@ class GridManager {
 		{
 			for(let j=0; j < this.grid.virtualGrid[i].length; j++)
 			{
-				if(this.grid.virtualGrid[i][j].hasOwnProperty("name"))
+				if(this.grid.virtualGrid[i][j].name !== null)
 				{
 					var slotElement = this.grid.virtualGrid[i][j];
 					this.drawTile(slotElement.realCoords.x, slotElement.realCoords.y, slotElement.size, slotElement.tech);
@@ -168,18 +166,26 @@ class GridManager {
 
 	drawTile(x, y, size, color)
 	{
-		this.ctx.fillStyle = color;
-	    this.ctx.fillRect(x, y, size, size);
+		var tile = document.createElement("div");
+
+		tile.className= "tile";
+		tile.style.top = y + "px";
+		tile.style.left = x + "px";
+		tile.style.width = size + "px";
+		tile.style.height = size + "px";
+		tile.style.background = color;
+
+		this.frame.appendChild(tile);
 	}
 
 	prepRow(rowIdx, dir)
 	{
 		let row = this.grid.virtualGrid[rowIdx];
 		let slotToPopulate = dir == -1 ? 0 : row.length - 1;
-		let newTech = this.grid.returnRandomTech();
-		newTech.virtualCoords = {x: slotToPopulate, y: rowIdx};
-		newTech.realCoords = {x: slotToPopulate, y: rowIdx};
-		row[slotToPopulate] = this.grid.returnRandomTech();
+		let newTile = this.grid.returnRandomTech();
+		newTile.virtualCoords = {x: slotToPopulate, y: rowIdx};
+		newTech.calcNewCoords();
+		row[slotToPopulate] = newTile;
 	}
 
 	updateRow()
@@ -196,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				};
 
   const mainGrid = new Grid(settings, tiles);
-  const gridManager = new GridManager(mainGrid, 'tech-grid');
+  const gridManager = new GridManager(mainGrid, 'main-grid');
 
 });
 

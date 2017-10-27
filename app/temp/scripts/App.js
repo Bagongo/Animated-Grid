@@ -116,7 +116,7 @@
 			key: "initData",
 			value: function initData(data) {
 				for (var key in data) {
-					var tile = new Tile(key, data[key], null, null);
+					var tile = new Tile(key, data[key], this.slotSize, null);
 					this.allTechs.push(tile);
 				}
 			}
@@ -136,14 +136,13 @@
 
 				for (var i = 0; i <= this.slotsY + 1; i++) {
 					for (var j = 0; j <= this.slotsX + 1; j++) {
-						var newTile;
+						var newTile = {};
 
 						if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
 							newTile = this.allTechs[idx];
 							idx++;
 						} else newTile = new Tile(null, null, null, null);
 
-						newTile.size = this.slotSize;
 						newTile.virtualCoords = { x: j, y: i };
 						newTile.initRealCoords();
 
@@ -196,8 +195,7 @@
 			_classCallCheck(this, GridManager);
 
 			this.grid = grid;
-			this.canvas = document.getElementById(selector);
-			this.ctx = this.canvas.getContext('2d');
+			this.frame = document.getElementById(selector);
 
 			this.initGrid();
 			this.populateGrid();
@@ -206,15 +204,15 @@
 		_createClass(GridManager, [{
 			key: "initGrid",
 			value: function initGrid() {
-				this.canvas.width = this.grid.slotsX * this.grid.slotSize;
-				this.canvas.height = this.grid.slotsY * this.grid.slotSize;
+				this.frame.style.width = this.grid.slotsX * this.grid.slotSize + "px";
+				this.frame.style.height = this.grid.slotsY * this.grid.slotSize + "px";
 			}
 		}, {
 			key: "populateGrid",
 			value: function populateGrid() {
 				for (var i = 0; i < this.grid.virtualGrid.length; i++) {
 					for (var j = 0; j < this.grid.virtualGrid[i].length; j++) {
-						if (this.grid.virtualGrid[i][j].hasOwnProperty("name")) {
+						if (this.grid.virtualGrid[i][j].name !== null) {
 							var slotElement = this.grid.virtualGrid[i][j];
 							this.drawTile(slotElement.realCoords.x, slotElement.realCoords.y, slotElement.size, slotElement.tech);
 						}
@@ -224,18 +222,26 @@
 		}, {
 			key: "drawTile",
 			value: function drawTile(x, y, size, color) {
-				this.ctx.fillStyle = color;
-				this.ctx.fillRect(x, y, size, size);
+				var tile = document.createElement("div");
+
+				tile.className = "tile";
+				tile.style.top = y + "px";
+				tile.style.left = x + "px";
+				tile.style.width = size + "px";
+				tile.style.height = size + "px";
+				tile.style.background = color;
+
+				this.frame.appendChild(tile);
 			}
 		}, {
 			key: "prepRow",
 			value: function prepRow(rowIdx, dir) {
 				var row = this.grid.virtualGrid[rowIdx];
 				var slotToPopulate = dir == -1 ? 0 : row.length - 1;
-				var newTech = this.grid.returnRandomTech();
-				newTech.virtualCoords = { x: slotToPopulate, y: rowIdx };
-				newTech.realCoords = { x: slotToPopulate, y: rowIdx };
-				row[slotToPopulate] = this.grid.returnRandomTech();
+				var newTile = this.grid.returnRandomTech();
+				newTile.virtualCoords = { x: slotToPopulate, y: rowIdx };
+				newTech.calcNewCoords();
+				row[slotToPopulate] = newTile;
 			}
 		}, {
 			key: "updateRow",
@@ -252,7 +258,7 @@
 		};
 
 		var mainGrid = new Grid(settings, tiles);
-		var gridManager = new GridManager(mainGrid, 'tech-grid');
+		var gridManager = new GridManager(mainGrid, 'main-grid');
 	});
 
 /***/ })
