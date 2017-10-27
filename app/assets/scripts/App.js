@@ -1,3 +1,5 @@
+var $ = require("jquery");
+
 let tiles = {
     aqua: "#00ffff",
     azure: "#f0ffff",
@@ -53,8 +55,7 @@ class Grid {
     this.slotsY = settings.slots.y;
     this.totalSlots = this.slotsX * this.slotsY;
     this.slotSize = settings.slotSize;
-    this.allTechs = [];
-    this.offGridTechs = [];
+    this.technologies = [];
     this.initData(data);
     this.virtualGrid = this.createVirtualGrid();
   }
@@ -63,14 +64,8 @@ class Grid {
   {
   	for (let key in data) {
   		let tile = new Tile(key, data[key], this.slotSize, null);
-		this.allTechs.push(tile);
+		this.technologies.push(tile);
 	}
-  }
-
-  storeRemaingingTechs(idx)
-  {
-	for(let i=idx; i < this.allTechs.length; i++)
-		this.offGridTechs.push(this.allTechs[i]);
   }
 
   createVirtualGrid()
@@ -86,14 +81,13 @@ class Grid {
 			var newTile = {};
 
 			if(i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1){
-				newTile = this.allTechs[idx];
+				newTile = this.technologies[idx];
 				idx++;
 			}
 			else
 				newTile = new Tile(null, null, null, null);
 			
 			newTile.virtualCoords = {x: j, y: i};
-			newTile.initRealCoords();
 
 			row.push(newTile);
 		}
@@ -102,14 +96,12 @@ class Grid {
 		row = [];
   	}
 
-  	this.storeRemaingingTechs(idx);
-
   	return vGrid;
   }
 
-  returnRandomTech()
+  returnTech()
   {
-  	 return this.offGridTechs[Math.floor(Math.random() * this.offGridTechs.length)];
+ 	 return this.technologies.shift();
   }
 
 }
@@ -157,40 +149,60 @@ class GridManager {
 			{
 				if(this.grid.virtualGrid[i][j].name !== null)
 				{
-					var slotElement = this.grid.virtualGrid[i][j];
-					this.drawTile(slotElement.realCoords.x, slotElement.realCoords.y, slotElement.size, slotElement.tech);
+					var tile = this.grid.virtualGrid[i][j];
+					this.insertTile(tile);
 				}
 			}
 		}
 	}
 
-	drawTile(x, y, size, color)
+	insertTile(tile)
 	{
-		var tile = document.createElement("div");
+		tile.initRealCoords();
 
-		tile.className= "tile";
-		tile.style.top = y + "px";
-		tile.style.left = x + "px";
-		tile.style.width = size + "px";
-		tile.style.height = size + "px";
-		tile.style.background = color;
+		var tileDiv = document.createElement("div");
+		tileDiv.className= "tile";
+		tileDiv.style.top = tile.realCoords.y + "px";
+		tileDiv.style.left = tile.realCoords.x + "px";
+		tileDiv.style.width = tile.size + "px";
+		tileDiv.style.height = tile.size + "px";
+		tileDiv.style.background = tile.tech;
 
-		this.frame.appendChild(tile);
+		tile.div = tileDiv;
+		this.frame.appendChild(tileDiv);
 	}
 
 	prepRow(rowIdx, dir)
 	{
 		let row = this.grid.virtualGrid[rowIdx];
-		let slotToPopulate = dir == -1 ? 0 : row.length - 1;
-		let newTile = this.grid.returnRandomTech();
+		let slotToPopulate = dir === "left" ? row.length - 1 : 0;
+		let newTile = this.grid.returnTech();
 		newTile.virtualCoords = {x: slotToPopulate, y: rowIdx};
-		newTech.calcNewCoords();
 		row[slotToPopulate] = newTile;
+		this.insertTile(newTile);
+
+		this.moveRow(row, dir);
 	}
 
-	updateRow()
-	{
+	moveRow(row, dir)
+	{  
+		for(let i=0; i < row.length; i++)
+		{
+			if(row[i].hasOwnProperty("div"))
+				row[i].div.classList.add("move");
+		}
 
+		var dirFactor = dir === "left" ? -1 : 1;
+		var callback = this.updateRow;
+
+		$(".move").animate({"margin-left": this.grid.slotSize * dirFactor})
+					.promise().done(function(){callback(row, dir);});
+	}
+
+	updateRow(row, dir)
+	{
+		$(".move").removeClass("move");
+		console.log("done");
 	}
 
 }
@@ -198,11 +210,13 @@ class GridManager {
 document.addEventListener('DOMContentLoaded', function () {
 
 	let settings = {slots:{x:5, y:5},
-					slotSize: 100
+					slotSize: 50
 				};
 
   const mainGrid = new Grid(settings, tiles);
   const gridManager = new GridManager(mainGrid, 'main-grid');
+
+  gridManager.prepRow(3, "right");
 
 });
 
