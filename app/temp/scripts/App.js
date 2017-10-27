@@ -98,7 +98,17 @@
 		yellow: "#ffff00"
 	};
 
-	// alert(Object.keys(tiles).length);
+	var Technology = function Technology(name, path) {
+		_classCallCheck(this, Technology);
+
+		this.name = name, this.path = path;
+	};
+
+	var Slot = function Slot(x, y) {
+		_classCallCheck(this, Slot);
+
+		this.virtualCoords = { x: x, y: y };
+	};
 
 	var Grid = function () {
 		function Grid(settings, data) {
@@ -117,8 +127,8 @@
 			key: "initData",
 			value: function initData(data) {
 				for (var key in data) {
-					var tile = new Tile(key, data[key], this.slotSize, null);
-					this.technologies.push(tile);
+					var technology = new Technology(key, data[key]);
+					this.technologies.push(technology);
 				}
 			}
 		}, {
@@ -130,16 +140,8 @@
 
 				for (var i = 0; i <= this.slotsY + 1; i++) {
 					for (var j = 0; j <= this.slotsX + 1; j++) {
-						var newTile = {};
-
-						if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
-							newTile = this.technologies[idx];
-							idx++;
-						} else newTile = new Tile(null, null, null, null);
-
-						newTile.virtualCoords = { x: j, y: i };
-
-						row.push(newTile);
+						var newSlot = new Slot(j, i);
+						row.push(newSlot);
 					}
 
 					vGrid.push(row);
@@ -156,29 +158,6 @@
 		}]);
 
 		return Grid;
-	}();
-
-	var Tile = function () {
-		function Tile(name, tech, size, vCoords) {
-			_classCallCheck(this, Tile);
-
-			this.name = name;
-			this.tech = tech;
-			this.size = size;
-			this.virtualCoords = vCoords;
-		}
-
-		_createClass(Tile, [{
-			key: "initRealCoords",
-			value: function initRealCoords() {
-				this.realCoords = { x: (this.virtualCoords.x - 1) * this.size, y: (this.virtualCoords.y - 1) * this.size };
-			}
-		}, {
-			key: "calcNewCoords",
-			value: function calcNewCoords() {}
-		}]);
-
-		return Tile;
 	}();
 
 	var GridManager = function () {
@@ -201,62 +180,66 @@
 		}, {
 			key: "populateGrid",
 			value: function populateGrid() {
-				for (var i = 0; i < this.grid.virtualGrid.length; i++) {
-					for (var j = 0; j < this.grid.virtualGrid[i].length; j++) {
-						if (this.grid.virtualGrid[i][j].name !== null) {
-							var tile = this.grid.virtualGrid[i][j];
-							this.insertTile(tile);
-						}
+				for (var i = 1; i < this.grid.virtualGrid.length - 1; i++) {
+					for (var j = 1; j < this.grid.virtualGrid[i].length - 1; j++) {
+						var tech = this.grid.returnTech();
+						var slot = this.grid.virtualGrid[i][j];
+						this.createAndInsertTile(tech, slot);
 					}
 				}
+
+				console.log(this.grid.virtualGrid);
 			}
 		}, {
-			key: "insertTile",
-			value: function insertTile(tile) {
-				tile.initRealCoords();
+			key: "createAndInsertTile",
+			value: function createAndInsertTile(tech, slot) {
+				var tile = document.createElement("div");
+				tile.classList.add("tile");
+				tile.style.top = (slot.virtualCoords.y - 1) * this.grid.slotSize + "px";
+				tile.style.left = (slot.virtualCoords.x - 1) * this.grid.slotSize + "px";
+				tile.style.width = this.grid.slotSize + "px";
+				tile.style.height = this.grid.slotSize + "px";
+				tile.style.background = tech.path;
 
-				var tileDiv = document.createElement("div");
-				tileDiv.className = "tile";
-				tileDiv.style.top = tile.realCoords.y + "px";
-				tileDiv.style.left = tile.realCoords.x + "px";
-				tileDiv.style.width = tile.size + "px";
-				tileDiv.style.height = tile.size + "px";
-				tileDiv.style.background = tile.tech;
+				slot.technology = tech;
+				slot.tile = tile;
 
-				tile.div = tileDiv;
-				this.frame.appendChild(tileDiv);
+				this.frame.appendChild(tile);
 			}
 		}, {
 			key: "prepRow",
 			value: function prepRow(rowIdx, dir) {
 				var row = this.grid.virtualGrid[rowIdx];
-				var slotToPopulate = dir === "left" ? row.length - 1 : 0;
-				var newTile = this.grid.returnTech();
-				newTile.virtualCoords = { x: slotToPopulate, y: rowIdx };
-				row[slotToPopulate] = newTile;
-				this.insertTile(newTile);
+				var slotToFill = dir === "left" ? row[row.length - 1] : row[0];
+				var newTech = this.grid.returnTech();
 
+				this.createAndInsertTile(newTech, slotToFill);
 				this.moveRow(row, dir);
 			}
 		}, {
 			key: "moveRow",
 			value: function moveRow(row, dir) {
+				var _this = this;
+
 				for (var i = 0; i < row.length; i++) {
-					if (row[i].hasOwnProperty("div")) row[i].div.classList.add("move");
+					if (row[i].hasOwnProperty("tile")) row[i].tile.classList.add("move");
 				}
 
 				var dirFactor = dir === "left" ? -1 : 1;
-				var callback = this.updateRow;
-
 				$(".move").animate({ "margin-left": this.grid.slotSize * dirFactor }).promise().done(function () {
-					callback(row, dir);
+					return _this.updateRow(row, dir);
 				});
 			}
 		}, {
 			key: "updateRow",
 			value: function updateRow(row, dir) {
+				//push 'first' tech to technologies
+				//loop row to move value in slots (start from 'second' into first until second to last)
+				//clear 'last'
+
+				console.log(this.grid.virtualGrid);
+
 				$(".move").removeClass("move");
-				console.log("done");
 			}
 		}]);
 
@@ -272,7 +255,7 @@
 		var mainGrid = new Grid(settings, tiles);
 		var gridManager = new GridManager(mainGrid, 'main-grid');
 
-		gridManager.prepRow(3, "right");
+		gridManager.prepRow(1, "left");
 	});
 
 /***/ }),
