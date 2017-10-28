@@ -62,9 +62,9 @@ class Slot{
 class Grid {
 
   constructor (settings, data) {    
-    this.slotsX = settings.slots.x;
-    this.slotsY = settings.slots.y;
-    this.totalSlots = this.slotsX * this.slotsY;
+    this.rows = settings.rows;
+    this.columns = settings.columns;
+    this.totalSlots = this.rows * this.columns;
     this.slotSize = settings.slotSize;
     this.technologies = [];
     this.initData(data);
@@ -85,9 +85,9 @@ class Grid {
   	var row = [];
   	var idx = 0;
 
-  	for(let i=0; i <= this.slotsY + 1; i++)
+  	for(let i=0; i <= this.columns + 1; i++)
   	{
-		for(let j=0; j <= this.slotsX + 1; j++)
+		for(let j=0; j <= this.rows + 1; j++)
 		{
 			var newSlot = new Slot(j, i);
 			row.push(newSlot);
@@ -119,8 +119,8 @@ class GridManager {
 
 	initGrid()
 	{
-		this.frame.style.width = (this.grid.slotsX * this.grid.slotSize) + "px";
-		this.frame.style.height = (this.grid.slotsY * this.grid.slotSize) + "px";
+		this.frame.style.width = (this.grid.rows * this.grid.slotSize) + "px";
+		this.frame.style.height = (this.grid.columns * this.grid.slotSize) + "px";
 	}
 
 	populateGrid()
@@ -134,8 +134,6 @@ class GridManager {
 				this.createAndInsertTile(tech, slot);				
 			}
 		}
-
-		console.log(this.grid.virtualGrid);
 	}
 
 	createAndInsertTile(tech, slot)
@@ -173,34 +171,156 @@ class GridManager {
 		}
 
 		var dirFactor = dir === "left" ? -1 : 1;
+		var callback = this.updateRow.bind(this);
 		$(".move").animate({"margin-left": this.grid.slotSize * dirFactor})
-					.promise().done(() => this.updateRow(row, dir));
+					.promise().done(function(){callback(row, dir);});
 	}
 
 	updateRow(row, dir)
 	{
+		console.log(this.grid.virtualGrid);
+
+		if(dir === "left")
+		{
+			this.grid.technologies.push(row[1].technology);
+			this.destroyTile(row[1].tile);
+
+			for(var i=1; i < row.length - 1; i++)
+			{
+				row[i].technology = row[i+1].technology;
+				row[i].tile = row[i+1].tile;
+			}
+
+			this.clearSlot(row[row.length - 1]);
+		}
+		else
+		{
+
+		}
+
 		//push 'first' tech to technologies
 		//loop row to move value in slots (start from 'second' into first until second to last)
 		//clear 'last'
-
-		console.log(this.grid.virtualGrid);
+		// console.log(this.grid.virtualGrid);
 
 		$(".move").removeClass("move");	
+
+		this.cb(row);
+	}
+
+	cb(row)
+	{
+		console.log(this.grid.virtualGrid);
+	}
+
+	clearSlot(slot)
+	{
+		delete slot.technology;
+		delete slot.tile;
+	}
+
+	destroyTile(tile)
+	{
+		tile.parentNode.removeChild(tile);
+	}
+}
+
+class GridController{
+
+	constructor(gridMan, altTarget, altDir){
+		this.manager = gridMan;
+		this.grid = this.manager.grid;
+
+		this.ACTION_PARAMS = {	
+		  0: {action: "row", direction: {0: "left", 1: "right"}},
+		  1: {action: "column", direction: {0: "up", 1: "down"}}
+		}
+
+		this.alternateTarget = altTarget;
+		this.alternateDirection = altDir;
+		this.lastAction = 0;
+		this.lastDirection = 0; 
+	}
+
+	startAction(action, target, dir)
+	{
+		if(action === "row")
+			this.manager.prepRow(target, dir);
+	}
+
+	randomizer(altAction, altDir)
+	{
+		var actionIdx, directionIdx, action, target, direction;
+
+		if(altAction)
+		{
+			actionIdx = this.lastAction === 0 ? 1 : 0;
+			this.lastTarget = actionIdx;
+		}
+		else
+			actionIdx = 0;
+			// actionIdx = this.returnRandomInRange(0, 1);
+
+		if(altDir)
+		{
+			directionIdx = this.lastDirection === 0 ? 1 : 0;
+			this.lastDirection = directionIdx;
+		}
+		else
+			directionIdx = 0;
+			//directionIdx = this.returnRandomInRange(0, 1);
+
+		var action = this.ACTION_PARAMS[actionIdx]["action"];
+		var direction = this.ACTION_PARAMS[actionIdx]["direction"][directionIdx];
+
+		if(action === "row")
+			target = this.returnRandomInRange(1, this.grid.rows);
+		else
+			target = this.returnRandomInRange(1, this.grid.columns);
+
+		this.startAction(action, target, direction);
+	}
+
+	returnRandomInRange(min, max)
+	{
+	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+}
+
+class Monitor{
+	constructor(listEl, list)
+	{
+		this.listElement = listEl;
+		this.list = list;
+	}
+
+	updateList()
+	{
+		this.listElement.empty();
+
+		for(let i=0; i < this.list.length; i++)
+		{
+			let listItem = this.list[i].name;
+			this.listElement.prepend("<li>" + listItem + "</li>");
+		}
 	}
 
 }
 
+
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {slots:{x:5, y:5},
-					slotSize: 50
-				};
+	let settings = {rows: 5, columns: 5, slotSize: 50};
 
-  const mainGrid = new Grid(settings, tiles);
-  const gridManager = new GridManager(mainGrid, 'main-grid');
+	const mainGrid = new Grid(settings, tiles);
+	const gridManager = new GridManager(mainGrid, 'main-grid');
+	const monitor = new Monitor($("#monitor > ul"), gridManager.grid.technologies);
+	const gridController = new GridController(gridManager, false, false);
 
-  gridManager.prepRow(1, "left");
-
+	$("#go").on("click", function(e){
+		e.preventDefault();
+		gridController.randomizer(false, false);
+	});
 });
 
 
