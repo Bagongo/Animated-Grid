@@ -165,7 +165,7 @@
 			_classCallCheck(this, GridManager);
 	
 			this.grid = grid;
-			this.frame = document.getElementById(selector);
+			this.frame = $("#" + selector);
 	
 			this.initGrid();
 			this.populateGrid();
@@ -174,8 +174,9 @@
 		_createClass(GridManager, [{
 			key: "initGrid",
 			value: function initGrid() {
-				this.frame.style.width = this.grid.rows * this.grid.slotSize + "px";
-				this.frame.style.height = this.grid.columns * this.grid.slotSize + "px";
+				this.frame.css({ "width": this.grid.rows * this.grid.slotSize + "px",
+					"height": this.grid.columns * this.grid.slotSize + "px"
+				});
 			}
 		}, {
 			key: "populateGrid",
@@ -191,18 +192,18 @@
 		}, {
 			key: "createAndInsertTile",
 			value: function createAndInsertTile(tech, slot) {
-				var tile = document.createElement("div");
-				tile.classList.add("tile");
-				tile.style.top = (slot.virtualCoords.y - 1) * this.grid.slotSize + "px";
-				tile.style.left = (slot.virtualCoords.x - 1) * this.grid.slotSize + "px";
-				tile.style.width = this.grid.slotSize + "px";
-				tile.style.height = this.grid.slotSize + "px";
-				tile.style.background = tech.path;
+				var $tile = $("<div></div>");
+				$tile.addClass("tile");
+				$tile.css({ "top": (slot.virtualCoords.y - 1) * this.grid.slotSize + "px",
+					"left": (slot.virtualCoords.x - 1) * this.grid.slotSize + "px",
+					"width": this.grid.slotSize + "px",
+					"height": this.grid.slotSize + "px",
+					"background": tech.path
+				});
 	
 				slot.technology = tech;
-				slot.tile = tile;
-	
-				this.frame.appendChild(tile);
+				slot.tile = $tile;
+				this.frame.append($tile);
 			}
 		}, {
 			key: "prepRow",
@@ -217,46 +218,49 @@
 		}, {
 			key: "moveRow",
 			value: function moveRow(row, dir) {
-				for (var i = 0; i < row.length; i++) {
-					if (row[i].hasOwnProperty("tile")) row[i].tile.classList.add("move");
-				}
-	
 				var dirFactor = dir === "left" ? -1 : 1;
 				var callback = this.updateRow.bind(this);
-				$(".move").animate({ "margin-left": this.grid.slotSize * dirFactor }).promise().done(function () {
-					callback(row, dir);
-				});
+	
+				for (var i = 0; i < row.length; i++) {
+					if (row[i].hasOwnProperty("tile")) {
+						var tile = row[i].tile;
+						var oldPosX = parseInt(tile.css("left"));
+						var newPosX = oldPosX + dirFactor * this.grid.slotSize + "px";
+						tile.animate({ "left": newPosX }).promise().done(function () {
+							callback(row, dir);
+						});
+					}
+				}
 			}
 		}, {
 			key: "updateRow",
 			value: function updateRow(row, dir) {
-				console.log(this.grid.virtualGrid);
+				var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
+				this.grid.technologies.push(startingSlot.technology);
+				this.destroyTile(startingSlot.tile);
 	
-				if (dir === "left") {
-					this.grid.technologies.push(row[1].technology);
-					this.destroyTile(row[1].tile);
+				console.log("ds");
 	
-					for (var i = 1; i < row.length - 1; i++) {
-						row[i].technology = row[i + 1].technology;
-						row[i].tile = row[i + 1].tile;
-					}
+				// if(dir === "left")
+				// {
+				// 	for(var i=1; i < row.length - 1; i++)
+				// 	{
+				// 		row[i].technology = row[i+1].technology;
+				// 		row[i].tile = row[i+1].tile;
+				// 	}
 	
-					this.clearSlot(row[row.length - 1]);
-				} else {}
+				// 	this.clearSlot(row[row.length - 1]);
+				// }
+				// else
+				// {
+				// 	for(var i = row.length - 2; i >= 1; i--)
+				// 	{
+				// 		row[i].technology = row[i-1].technology;
+				// 		row[i].tile = row[i-1].tile;
+				// 	}
 	
-				//push 'first' tech to technologies
-				//loop row to move value in slots (start from 'second' into first until second to last)
-				//clear 'last'
-				// console.log(this.grid.virtualGrid);
-	
-				$(".move").removeClass("move");
-	
-				this.cb(row);
-			}
-		}, {
-			key: "cb",
-			value: function cb(row) {
-				console.log(this.grid.virtualGrid);
+				// 	this.clearSlot(row[0]);
+				// }
 			}
 		}, {
 			key: "clearSlot",
@@ -267,7 +271,7 @@
 		}, {
 			key: "destroyTile",
 			value: function destroyTile(tile) {
-				tile.parentNode.removeChild(tile);
+				tile.remove();
 			}
 		}]);
 	
@@ -305,14 +309,12 @@
 				if (altAction) {
 					actionIdx = this.lastAction === 0 ? 1 : 0;
 					this.lastTarget = actionIdx;
-				} else actionIdx = 0;
-				// actionIdx = this.returnRandomInRange(0, 1);
+				} else actionIdx = this.returnRandomInRange(0, 1);
 	
 				if (altDir) {
 					directionIdx = this.lastDirection === 0 ? 1 : 0;
 					this.lastDirection = directionIdx;
-				} else directionIdx = 0;
-				//directionIdx = this.returnRandomInRange(0, 1);
+				} else directionIdx = this.returnRandomInRange(0, 1);
 	
 				var action = this.ACTION_PARAMS[actionIdx]["action"];
 				var direction = this.ACTION_PARAMS[actionIdx]["direction"][directionIdx];
@@ -365,7 +367,7 @@
 	
 		$("#go").on("click", function (e) {
 			e.preventDefault();
-			gridController.randomizer(false, false);
+			gridController.startAction("row", 1, "right");
 		});
 	});
 
