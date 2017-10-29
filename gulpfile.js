@@ -12,7 +12,9 @@ postcss = require('gulp-postcss'),
 autoprefixer = require('autoprefixer'),
 cssImport = require('postcss-import'),
 //Watch
-watch = require('gulp-watch');
+watch = require('gulp-watch'),
+//Build
+rev = require('gulp-rev');
 
 gulp.task('watch', function() {
 
@@ -86,7 +88,7 @@ gulp.task("usemin", ["deleteDistFolder", "styles", "scripts"], function(){
 		css: [function(){return rev();}, function(){return cssnano();}],
 		js: [function(){return rev();}, function(){return uglify();}]
 	}))
-	.pipe(gulp.dest("./dist"));
+	.pipe(gulp.dest("./docs"));
 });
 
 gulp.task("build", ["deleteDistFolder", "usemin"]); 

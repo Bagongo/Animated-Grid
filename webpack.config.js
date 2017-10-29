@@ -1,4 +1,5 @@
 module.exports = {
+  devtool:"source-map",
   entry: {
     App: "./app/assets/scripts/App.js",
     // Add other for multiple entry. Example below....
@@ -20,4 +21,4 @@ module.exports = {
       }
     ]
   }
-}
+};
