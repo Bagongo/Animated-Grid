@@ -31,6 +31,14 @@ body, html{
 	font-family: monospace;
 }
 
+#controls{
+	height: 100px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	font-family: arial;
+}
+
 #go{
 	width: 75px;
 	height: 50px;

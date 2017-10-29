@@ -166,8 +166,8 @@
 	
 			this.grid = grid;
 			this.frame = $("#" + selector);
-	
 			this.monitor = monitor;
+			this.locked = false;
 	
 			this.initGrid();
 			this.populateGrid();
@@ -260,6 +260,8 @@
 	
 					this.clearSlot(row[0]);
 				}
+	
+				this.endSequence();
 			}
 		}, {
 			key: "prepColumn",
@@ -318,6 +320,8 @@
 	
 					this.clearSlot(vGrid[0][colIdx]);
 				}
+	
+				this.endSequence();
 			}
 		}, {
 			key: "clearSlot",
@@ -329,6 +333,11 @@
 			key: "destroyTile",
 			value: function destroyTile(tile) {
 				tile.remove();
+			}
+		}, {
+			key: "endSequence",
+			value: function endSequence() {
+				this.locked = false;
 			}
 		}]);
 	
@@ -421,7 +430,12 @@
 	
 		$("#go").on("click", function (e) {
 			e.preventDefault();
-			gridController.randomizer(false);
+	
+			var random = document.getElementById("randomize").checked;
+			if (!gridController.manager.locked) {
+				gridController.randomizer(random);
+				gridController.manager.locked = true;
+			}
 		});
 	
 		monitor.updateList();

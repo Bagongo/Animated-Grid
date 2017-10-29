@@ -112,8 +112,8 @@ class GridManager {
 	constructor(grid, selector, monitor){
 		this.grid = grid;
 		this.frame = $("#" + selector);
-
 		this.monitor = monitor;
+		this.locked = false;
 
 	    this.initGrid();
 	    this.populateGrid();
@@ -217,6 +217,8 @@ class GridManager {
 
 			this.clearSlot(row[0]);
 		}
+
+		this.endSequence();
 	}
 
 	prepColumn(colIdx, dir)
@@ -284,6 +286,8 @@ class GridManager {
 
 			this.clearSlot(vGrid[0][colIdx]);
 		}
+
+		this.endSequence();
 	}
 
 	clearSlot(slot)
@@ -295,6 +299,11 @@ class GridManager {
 	destroyTile(tile)
 	{
 		tile.remove();
+	}
+
+	endSequence()
+	{
+		this.locked = false;
 	}
 }
 
@@ -382,7 +391,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	$("#go").on("click", function(e){
 		e.preventDefault();
-		gridController.randomizer(false);
+
+		var random = document.getElementById("randomize").checked;
+		if(!gridController.manager.locked)
+		{
+			gridController.randomizer(random);
+			gridController.manager.locked = true;
+		}
 	});
 
 	monitor.updateList();
