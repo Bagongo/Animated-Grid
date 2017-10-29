@@ -1,6 +1,9 @@
 body, html{
 	height: 100%;
 	width: 100%;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 #container{
@@ -39,11 +42,13 @@ body, html{
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
-	font-family: arial;
+	font-family: Verdana, Arial;
 }
 
 #go{
 	width: 75px;
 	height: 50px;
+	font-size: 1rem;
+	font-weight: 700;
 }
 
