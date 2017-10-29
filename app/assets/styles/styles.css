@@ -31,3 +31,8 @@ body, html{
 	font-family: monospace;
 }
 
+#go{
+	width: 75px;
+	height: 50px;
+}
+

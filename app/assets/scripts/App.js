@@ -219,6 +219,73 @@ class GridManager {
 		}
 	}
 
+	prepColumn(colIdx, dir)
+	{
+		var vGrid = this.grid.virtualGrid;
+		var slotToFill = dir === "up" ? vGrid[vGrid.length - 1][colIdx] : vGrid[0][colIdx];
+		var newTech = this.grid.returnTech();
+		this.createAndInsertTile(newTech, slotToFill);
+		this.moveColumn(colIdx, dir);
+	}
+
+	moveColumn(colIdx, dir)
+	{
+		var vGrid = this.grid.virtualGrid;
+		var span = dir==="up" ? vGrid.length - 1 : vGrid.length - 2;
+		var dirFactor = dir === "up" ? -1 : 1;
+		
+		var callback = this.updateColumn.bind(this);
+		
+		for(let i=0; i < vGrid.length; i++)
+		{
+			if(vGrid[i][colIdx].hasOwnProperty("tile"))
+			{
+				var lastTile = i >= span ? true : false; 
+				var tile = vGrid[i][colIdx].tile;
+				var oldPosY = parseInt(tile.css("top"));
+				var newPosY = (oldPosY + dirFactor * this.grid.slotSize) + "px";
+
+				if(lastTile)
+					tile.animate({"top": newPosY}).promise().done(function(){callback(colIdx, dir)});
+				else
+					tile.animate({"top": newPosY});	
+			}
+		}
+
+	}
+
+	updateColumn(colIdx, dir)
+	{
+		var vGrid = this.grid.virtualGrid;
+		var slotToDel = dir === "up" ? vGrid[1][colIdx] : vGrid[vGrid.length - 2][colIdx];
+
+		this.grid.technologies.push(slotToDel.technology);
+		this.destroyTile(slotToDel.tile);
+
+		this.monitor.updateList();
+
+		if(dir === "up")
+		{
+			for(let i=1; i < vGrid.length - 1; i++)
+			{
+				vGrid[i][colIdx].technology = vGrid[i+1][colIdx].technology;
+				vGrid[i][colIdx].tile = vGrid[i+1][colIdx].tile;
+			}
+
+			this.clearSlot(vGrid[vGrid.length - 1][colIdx]);
+		}
+		else
+		{
+			for(let i = vGrid.length - 2; i >= 1; i--)
+			{
+				vGrid[i][colIdx].technology = vGrid[i-1][colIdx].technology;
+				vGrid[i][colIdx].tile = vGrid[i-1][colIdx].tile;
+			}
+
+			this.clearSlot(vGrid[0][colIdx]);
+		}
+	}
+
 	clearSlot(slot)
 	{
 		delete slot.technology;
@@ -252,6 +319,8 @@ class GridController{
 	{
 		if(action === "row")
 			this.manager.prepRow(target, dir);
+		else
+			this.manager.prepColumn(target, dir);
 	}
 
 	randomizer(altAction, altDir)
@@ -261,11 +330,10 @@ class GridController{
 		if(altAction)
 		{
 			actionIdx = this.lastAction === 0 ? 1 : 0;
-			this.lastTarget = actionIdx;
+			this.lastAction = actionIdx;
 		}
 		else
-			//actionIdx = this.returnRandomInRange(0, 1);
-			actionIdx = 0;
+			actionIdx = this.returnRandomInRange(0, 1);
 
 		if(altDir)
 		{
@@ -324,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	$("#go").on("click", function(e){
 		e.preventDefault();
-		gridController.randomizer(false, true);
+		gridController.randomizer(true, true);
 	});
 
 	monitor.updateList();

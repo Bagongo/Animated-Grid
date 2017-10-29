@@ -262,6 +262,64 @@
 				}
 			}
 		}, {
+			key: "prepColumn",
+			value: function prepColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var slotToFill = dir === "up" ? vGrid[vGrid.length - 1][colIdx] : vGrid[0][colIdx];
+				var newTech = this.grid.returnTech();
+				this.createAndInsertTile(newTech, slotToFill);
+				this.moveColumn(colIdx, dir);
+			}
+		}, {
+			key: "moveColumn",
+			value: function moveColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var span = dir === "up" ? vGrid.length - 1 : vGrid.length - 2;
+				var dirFactor = dir === "up" ? -1 : 1;
+	
+				var callback = this.updateColumn.bind(this);
+	
+				for (var i = 0; i < vGrid.length; i++) {
+					if (vGrid[i][colIdx].hasOwnProperty("tile")) {
+						var lastTile = i >= span ? true : false;
+						var tile = vGrid[i][colIdx].tile;
+						var oldPosY = parseInt(tile.css("top"));
+						var newPosY = oldPosY + dirFactor * this.grid.slotSize + "px";
+	
+						if (lastTile) tile.animate({ "top": newPosY }).promise().done(function () {
+							callback(colIdx, dir);
+						});else tile.animate({ "top": newPosY });
+					}
+				}
+			}
+		}, {
+			key: "updateColumn",
+			value: function updateColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var slotToDel = dir === "up" ? vGrid[1][colIdx] : vGrid[vGrid.length - 2][colIdx];
+	
+				this.grid.technologies.push(slotToDel.technology);
+				this.destroyTile(slotToDel.tile);
+	
+				this.monitor.updateList();
+	
+				if (dir === "up") {
+					for (var i = 1; i < vGrid.length - 1; i++) {
+						vGrid[i][colIdx].technology = vGrid[i + 1][colIdx].technology;
+						vGrid[i][colIdx].tile = vGrid[i + 1][colIdx].tile;
+					}
+	
+					this.clearSlot(vGrid[vGrid.length - 1][colIdx]);
+				} else {
+					for (var _i = vGrid.length - 2; _i >= 1; _i--) {
+						vGrid[_i][colIdx].technology = vGrid[_i - 1][colIdx].technology;
+						vGrid[_i][colIdx].tile = vGrid[_i - 1][colIdx].tile;
+					}
+	
+					this.clearSlot(vGrid[0][colIdx]);
+				}
+			}
+		}, {
 			key: "clearSlot",
 			value: function clearSlot(slot) {
 				delete slot.technology;
@@ -298,7 +356,7 @@
 		_createClass(GridController, [{
 			key: "startAction",
 			value: function startAction(action, target, dir) {
-				if (action === "row") this.manager.prepRow(target, dir);
+				if (action === "row") this.manager.prepRow(target, dir);else this.manager.prepColumn(target, dir);
 			}
 		}, {
 			key: "randomizer",
@@ -307,10 +365,8 @@
 	
 				if (altAction) {
 					actionIdx = this.lastAction === 0 ? 1 : 0;
-					this.lastTarget = actionIdx;
-				} else
-					//actionIdx = this.returnRandomInRange(0, 1);
-					actionIdx = 0;
+					this.lastAction = actionIdx;
+				} else actionIdx = this.returnRandomInRange(0, 1);
 	
 				if (altDir) {
 					directionIdx = this.lastDirection === 0 ? 1 : 0;
@@ -369,7 +425,7 @@
 	
 		$("#go").on("click", function (e) {
 			e.preventDefault();
-			gridController.randomizer(false, true);
+			gridController.randomizer(true, true);
 		});
 	
 		monitor.updateList();
