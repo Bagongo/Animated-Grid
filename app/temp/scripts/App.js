@@ -137,34 +137,11 @@
 				var vGrid = [];
 				var row = [];
 				var idx = 0;
-<<<<<<< HEAD
-
-				for (var i = 0; i <= this.slotsY + 1; i++) {
-					for (var j = 0; j <= this.slotsX + 1; j++) {
-						if (idx >= this.allTechs.length) {
-							console.log("Number of tiles exceed number of technologies....");
-							return false;
-						}
-
-						var newTile;
-
-						if (i > 0 && i < this.slotsY + 1 && j > 0 && j < this.slotsX + 1) {
-							newTile = this.allTechs[idx];
-							idx++;
-						} else newTile = new Tile(null, null, null, null);
-
-						newTile.size = this.slotSize;
-						newTile.virtualCoords = { x: j, y: i };
-						newTile.initRealCoords();
-
-						row.push(newTile);
-=======
 	
 				for (var i = 0; i <= this.columns + 1; i++) {
 					for (var j = 0; j <= this.rows + 1; j++) {
 						var newSlot = new Slot(j, i);
 						row.push(newSlot);
->>>>>>> absolute
 					}
 	
 					vGrid.push(row);
