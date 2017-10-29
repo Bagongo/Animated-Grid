@@ -161,11 +161,13 @@
 	}();
 	
 	var GridManager = function () {
-		function GridManager(grid, selector) {
+		function GridManager(grid, selector, monitor) {
 			_classCallCheck(this, GridManager);
 	
 			this.grid = grid;
 			this.frame = $("#" + selector);
+	
+			this.monitor = monitor;
 	
 			this.initGrid();
 			this.populateGrid();
@@ -224,7 +226,6 @@
 				for (var i = 0; i < row.length; i++) {
 					if (row[i].hasOwnProperty("tile")) {
 						var lastTile = dir === "left" && i >= row.length - 1 || dir === "right" && i >= row.length - 2 ? true : false;
-	
 						var tile = row[i].tile;
 						var oldPosX = parseInt(tile.css("left"));
 						var newPosX = oldPosX + dirFactor * this.grid.slotSize + "px";
@@ -238,10 +239,11 @@
 		}, {
 			key: "updateRow",
 			value: function updateRow(row, dir) {
-				console.log("ldkf");
 				var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
 				this.grid.technologies.push(startingSlot.technology);
 				this.destroyTile(startingSlot.tile);
+	
+				this.monitor.updateList();
 	
 				if (dir === "left") {
 					for (var i = 1; i < row.length - 1; i++) {
@@ -258,8 +260,6 @@
 	
 					this.clearSlot(row[0]);
 				}
-	
-				$(".move").removeClass("move");
 			}
 		}, {
 			key: "clearSlot",
@@ -349,7 +349,8 @@
 	
 				for (var i = 0; i < this.list.length; i++) {
 					var listItem = this.list[i].name;
-					this.listElement.prepend("<li>" + listItem + "</li>");
+					var color = this.list[i].path;
+					this.listElement.prepend("<li style='color:" + color + "'>" + listItem + "</li>");
 				}
 			}
 		}]);
@@ -362,14 +363,16 @@
 		var settings = { rows: 5, columns: 5, slotSize: 50 };
 	
 		var mainGrid = new Grid(settings, tiles);
-		var gridManager = new GridManager(mainGrid, 'main-grid');
-		var monitor = new Monitor($("#monitor > ul"), gridManager.grid.technologies);
+		var monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
+		var gridManager = new GridManager(mainGrid, 'main-grid', monitor);
 		var gridController = new GridController(gridManager, false, false);
 	
 		$("#go").on("click", function (e) {
 			e.preventDefault();
 			gridController.randomizer(false, true);
 		});
+	
+		monitor.updateList();
 	});
 
 /***/ }),

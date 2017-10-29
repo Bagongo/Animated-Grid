@@ -25,9 +25,9 @@ body, html{
 }
 
 #monitor{
+	width: 200px;
 	padding: 1rem;
-	background: black;
-	color: aquamarine;
+	background: rgba(0, 0, 0, .8);
 	font-family: monospace;
 }
 

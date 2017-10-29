@@ -109,9 +109,11 @@ class Grid {
 
 class GridManager {
 
-	constructor(grid, selector){
+	constructor(grid, selector, monitor){
 		this.grid = grid;
 		this.frame = $("#" + selector);
+
+		this.monitor = monitor;
 
 	    this.initGrid();
 	    this.populateGrid();
@@ -175,7 +177,6 @@ class GridManager {
 				var lastTile = ((dir==="left" && i >= row.length - 1) 
 							|| (dir==="right" && i >= row.length - 2)) ? 
 								true : false;
-
 				var tile = row[i].tile;
 				var oldPosX = parseInt(tile.css("left"));
 				var newPosX = (oldPosX + dirFactor * this.grid.slotSize) + "px";
@@ -190,10 +191,11 @@ class GridManager {
 
 	updateRow(row, dir)
 	{
-		console.log("ldkf");
 		var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
 		this.grid.technologies.push(startingSlot.technology);
 		this.destroyTile(startingSlot.tile);
+
+		this.monitor.updateList();
 
 		if(dir === "left")
 		{
@@ -215,8 +217,6 @@ class GridManager {
 
 			this.clearSlot(row[0]);
 		}
-
-		$(".move").removeClass("move");
 	}
 
 	clearSlot(slot)
@@ -306,26 +306,28 @@ class Monitor{
 		for(let i=0; i < this.list.length; i++)
 		{
 			let listItem = this.list[i].name;
-			this.listElement.prepend("<li>" + listItem + "</li>");
+			let color = this.list[i].path;
+			this.listElement.prepend("<li style='color:" + color + "'>" + listItem + "</li>");
 		}
 	}
 
 }
-
 
 document.addEventListener('DOMContentLoaded', function () {
 
 	let settings = {rows: 5, columns: 5, slotSize: 50};
 
 	const mainGrid = new Grid(settings, tiles);
-	const gridManager = new GridManager(mainGrid, 'main-grid');
-	const monitor = new Monitor($("#monitor > ul"), gridManager.grid.technologies);
+	const monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
+	const gridManager = new GridManager(mainGrid, 'main-grid', monitor);
 	const gridController = new GridController(gridManager, false, false);
 
 	$("#go").on("click", function(e){
 		e.preventDefault();
 		gridController.randomizer(false, true);
 	});
+
+	monitor.updateList();
 });
 
 
