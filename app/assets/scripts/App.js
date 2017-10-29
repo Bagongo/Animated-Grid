@@ -167,49 +167,56 @@ class GridManager {
 	{  
 		var dirFactor = dir === "left" ? -1 : 1;
 		var callback = this.updateRow.bind(this);
-
+		
 		for(let i=0; i < row.length; i++)
 		{
 			if(row[i].hasOwnProperty("tile"))
 			{
+				var lastTile = ((dir==="left" && i >= row.length - 1) 
+							|| (dir==="right" && i >= row.length - 2)) ? 
+								true : false;
+
 				var tile = row[i].tile;
 				var oldPosX = parseInt(tile.css("left"));
 				var newPosX = (oldPosX + dirFactor * this.grid.slotSize) + "px";
-				tile.animate({"left": newPosX})
-					.promise()
-					.done(function(){callback(row, dir);});
+
+				if(lastTile)
+					tile.animate({"left": newPosX}).promise().done(function(){callback(row, dir)});
+				else
+					tile.animate({"left": newPosX});	
 			}
 		}
 	}
 
 	updateRow(row, dir)
 	{
+		console.log("ldkf");
 		var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
 		this.grid.technologies.push(startingSlot.technology);
 		this.destroyTile(startingSlot.tile);
 
-		console.log("ds");
+		if(dir === "left")
+		{
+			for(var i=1; i < row.length - 1; i++)
+			{
+				row[i].technology = row[i+1].technology;
+				row[i].tile = row[i+1].tile;
+			}
 
-		// if(dir === "left")
-		// {
-		// 	for(var i=1; i < row.length - 1; i++)
-		// 	{
-		// 		row[i].technology = row[i+1].technology;
-		// 		row[i].tile = row[i+1].tile;
-		// 	}
+			this.clearSlot(row[row.length - 1]);
+		}
+		else
+		{
+			for(var i = row.length - 2; i >= 1; i--)
+			{
+				row[i].technology = row[i-1].technology;
+				row[i].tile = row[i-1].tile;
+			}
 
-		// 	this.clearSlot(row[row.length - 1]);
-		// }
-		// else
-		// {
-		// 	for(var i = row.length - 2; i >= 1; i--)
-		// 	{
-		// 		row[i].technology = row[i-1].technology;
-		// 		row[i].tile = row[i-1].tile;
-		// 	}
+			this.clearSlot(row[0]);
+		}
 
-		// 	this.clearSlot(row[0]);
-		// }
+		$(".move").removeClass("move");
 	}
 
 	clearSlot(slot)
@@ -257,7 +264,8 @@ class GridController{
 			this.lastTarget = actionIdx;
 		}
 		else
-			actionIdx = this.returnRandomInRange(0, 1);
+			//actionIdx = this.returnRandomInRange(0, 1);
+			actionIdx = 0;
 
 		if(altDir)
 		{
@@ -316,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	$("#go").on("click", function(e){
 		e.preventDefault();
-		gridController.startAction("row", 1, "right");
+		gridController.randomizer(false, true);
 	});
 });
 
