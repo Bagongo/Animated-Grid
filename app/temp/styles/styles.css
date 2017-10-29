@@ -20,13 +20,16 @@ body, html{
 
 #main-grid{
 	position: relative;
-	overflow: visible;
+	overflow: hidden;
 	background: black;
-	box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+	border: 1px solid black;
 }
 
 .tile{
 	position: absolute;
+	box-sizing: border-box;
+	border: 1px solid black;
 }
 
 #monitor{
