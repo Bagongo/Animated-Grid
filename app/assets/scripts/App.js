@@ -300,19 +300,15 @@ class GridManager {
 
 class GridController{
 
-	constructor(gridMan, altTarget, altDir){
+	constructor(gridMan){
 		this.manager = gridMan;
 		this.grid = this.manager.grid;
 
 		this.ACTION_PARAMS = {	
-		  0: {action: "row", direction: {0: "left", 1: "right"}},
-		  1: {action: "column", direction: {0: "up", 1: "down"}}
-		}
-
-		this.alternateTarget = altTarget;
-		this.alternateDirection = altDir;
-		this.lastAction = 0;
-		this.lastDirection = 0; 
+			last: this.returnRandomInRange(0, 1),	
+			0: {action: "row", direction: {0: "left", 1: "right", last: null}},
+			1: {action: "column", direction: {0: "up", 1: "down", last: null}}
+		};
 	}
 
 	startAction(action, target, dir)
@@ -323,33 +319,27 @@ class GridController{
 			this.manager.prepColumn(target, dir);
 	}
 
-	randomizer(altAction, altDir)
+	randomizer(random)
 	{
-		var actionIdx, directionIdx, action, target, direction;
+		var actionIdx, directionIdx, range, action, target, direction;
 
-		if(altAction)
+		if(random)
 		{
-			actionIdx = this.lastAction === 0 ? 1 : 0;
-			this.lastAction = actionIdx;
-		}
-		else
 			actionIdx = this.returnRandomInRange(0, 1);
-
-		if(altDir)
-		{
-			directionIdx = this.lastDirection === 0 ? 1 : 0;
-			this.lastDirection = directionIdx;
+			direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0,1)];
 		}
 		else
-			directionIdx = this.returnRandomInRange(0, 1);
+		{
+			actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
+			this.ACTION_PARAMS.last = actionIdx;
+			directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
+			this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
+			direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
+		}
 
-		var action = this.ACTION_PARAMS[actionIdx]["action"];
-		var direction = this.ACTION_PARAMS[actionIdx]["direction"][directionIdx];
-
-		if(action === "row")
-			target = this.returnRandomInRange(1, this.grid.rows);
-		else
-			target = this.returnRandomInRange(1, this.grid.columns);
+		action = this.ACTION_PARAMS[actionIdx].action;
+		range = action === "row" ? this.grid.rows : this.grid.columns;
+		target = this.returnRandomInRange(1, range); 
 
 		this.startAction(action, target, direction);
 	}
@@ -392,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	$("#go").on("click", function(e){
 		e.preventDefault();
-		gridController.randomizer(true, true);
+		gridController.randomizer(false);
 	});
 
 	monitor.updateList();

@@ -336,21 +336,17 @@
 	}();
 	
 	var GridController = function () {
-		function GridController(gridMan, altTarget, altDir) {
+		function GridController(gridMan) {
 			_classCallCheck(this, GridController);
 	
 			this.manager = gridMan;
 			this.grid = this.manager.grid;
 	
 			this.ACTION_PARAMS = {
-				0: { action: "row", direction: { 0: "left", 1: "right" } },
-				1: { action: "column", direction: { 0: "up", 1: "down" } }
+				last: this.returnRandomInRange(0, 1),
+				0: { action: "row", direction: { 0: "left", 1: "right", last: null } },
+				1: { action: "column", direction: { 0: "up", 1: "down", last: null } }
 			};
-	
-			this.alternateTarget = altTarget;
-			this.alternateDirection = altDir;
-			this.lastAction = 0;
-			this.lastDirection = 0;
 		}
 	
 		_createClass(GridController, [{
@@ -360,23 +356,23 @@
 			}
 		}, {
 			key: "randomizer",
-			value: function randomizer(altAction, altDir) {
-				var actionIdx, directionIdx, action, target, direction;
+			value: function randomizer(random) {
+				var actionIdx, directionIdx, range, action, target, direction;
 	
-				if (altAction) {
-					actionIdx = this.lastAction === 0 ? 1 : 0;
-					this.lastAction = actionIdx;
-				} else actionIdx = this.returnRandomInRange(0, 1);
+				if (random) {
+					actionIdx = this.returnRandomInRange(0, 1);
+					direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
+				} else {
+					actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
+					this.ACTION_PARAMS.last = actionIdx;
+					directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
+					this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
+					direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
+				}
 	
-				if (altDir) {
-					directionIdx = this.lastDirection === 0 ? 1 : 0;
-					this.lastDirection = directionIdx;
-				} else directionIdx = this.returnRandomInRange(0, 1);
-	
-				var action = this.ACTION_PARAMS[actionIdx]["action"];
-				var direction = this.ACTION_PARAMS[actionIdx]["direction"][directionIdx];
-	
-				if (action === "row") target = this.returnRandomInRange(1, this.grid.rows);else target = this.returnRandomInRange(1, this.grid.columns);
+				action = this.ACTION_PARAMS[actionIdx].action;
+				range = action === "row" ? this.grid.rows : this.grid.columns;
+				target = this.returnRandomInRange(1, range);
 	
 				this.startAction(action, target, direction);
 			}
@@ -425,7 +421,7 @@
 	
 		$("#go").on("click", function (e) {
 			e.preventDefault();
-			gridController.randomizer(true, true);
+			gridController.randomizer(false);
 		});
 	
 		monitor.updateList();
