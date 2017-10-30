@@ -62,9 +62,9 @@ class Slot{
 class Grid {
 
   constructor (settings, data) {    
-    this.rows = settings.rows;
-    this.columns = settings.columns;
-    this.totalSlots = this.rows * this.columns;
+    this.slotsX = settings.columns;
+    this.slotsY = settings.rows;
+    this.totalSlots = this.slotsX * this.slotsY;
     this.slotSize = settings.slotSize;
     this.technologies = [];
     this.initData(data);
@@ -85,9 +85,9 @@ class Grid {
   	var row = [];
   	var idx = 0;
 
-  	for(let i=0; i <= this.columns + 1; i++)
+  	for(let i=0; i <= this.slotsY + 1; i++)
   	{
-		for(let j=0; j <= this.rows + 1; j++)
+		for(let j=0; j <= this.slotsX + 1; j++)
 		{
 			var newSlot = new Slot(j, i);
 			row.push(newSlot);
@@ -121,8 +121,8 @@ class GridManager {
 
 	initGrid()
 	{
-		this.frame.css({"width": (this.grid.rows * this.grid.slotSize) + "px",
-						"height": (this.grid.columns * this.grid.slotSize) + "px"
+		this.frame.css({"width": (this.grid.slotsX * this.grid.slotSize) + "px",
+						"height": (this.grid.slotsY * this.grid.slotSize) + "px"
 		});
 	}
 
@@ -315,8 +315,8 @@ class GridController{
 
 		this.ACTION_PARAMS = {	
 			last: this.returnRandomInRange(0, 1),	
-			0: {action: "row", direction: {0: "left", 1: "right", last: null}},
-			1: {action: "column", direction: {0: "up", 1: "down", last: null}}
+			0: {action: "row", lastTarget: null, direction: {0: "left", 1: "right", last: null}},
+			1: {action: "column", lastTarget: null, direction: {0: "up", 1: "down", last: null}}
 		};
 	}
 
@@ -347,8 +347,8 @@ class GridController{
 		}
 
 		action = this.ACTION_PARAMS[actionIdx].action;
-		range = action === "row" ? this.grid.rows : this.grid.columns;
-		target = this.returnRandomInRange(1, range); 
+		range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
+		target = this.returnRandomInRange(1, range);
 
 		this.startAction(action, target, direction);
 	}
@@ -382,7 +382,7 @@ class Monitor{
 
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {rows: 5, columns: 5, slotSize: 50};
+	let settings = {rows: 5, columns: 8, slotSize: 50};
 
 	const mainGrid = new Grid(settings, tiles);
 	const monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
