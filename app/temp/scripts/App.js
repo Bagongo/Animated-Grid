@@ -120,10 +120,20 @@
 			this.slotSize = settings.slotSize;
 			this.technologies = [];
 			this.initData(data);
-			this.virtualGrid = this.createVirtualGrid();
+			this.checkSettings();
 		}
 	
 		_createClass(Grid, [{
+			key: "checkSettings",
+			value: function checkSettings() {
+				if (this.totalSlots >= this.technologies.length) {
+					console.log("Grid dimensions exceeded available technologies...");
+					return false;
+				}
+	
+				this.virtualGrid = this.createVirtualGrid();
+			}
+		}, {
 			key: "initData",
 			value: function initData(data) {
 				for (var key in data) {
@@ -352,7 +362,7 @@
 			this.grid = this.manager.grid;
 	
 			this.ACTION_PARAMS = {
-				last: this.returnRandomInRange(0, 1),
+				last: null,
 				0: { action: "row", lastTarget: null, direction: { 0: "left", 1: "right", last: null } },
 				1: { action: "column", lastTarget: null, direction: { 0: "up", 1: "down", last: null } }
 			};
@@ -371,17 +381,27 @@
 				if (random) {
 					actionIdx = this.returnRandomInRange(0, 1);
 					direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
+					action = this.ACTION_PARAMS[actionIdx].action;
+					range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
+					target = this.returnRandomInRange(1, range);
+	
+					if (actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
+						this.randomizer(random);
+						console.log("recalled rand");
+						return;
+					}
 				} else {
 					actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
-					this.ACTION_PARAMS.last = actionIdx;
 					directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
 					this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
 					direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
+					action = this.ACTION_PARAMS[actionIdx].action;
+					range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
+					target = this.returnRandomInRange(1, range);
 				}
 	
-				action = this.ACTION_PARAMS[actionIdx].action;
-				range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-				target = this.returnRandomInRange(1, range);
+				this.ACTION_PARAMS.last = actionIdx;
+				this.ACTION_PARAMS[actionIdx].lastTarget = target;
 	
 				this.startAction(action, target, direction);
 			}
@@ -421,7 +441,7 @@
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	
-		var settings = { rows: 5, columns: 8, slotSize: 50 };
+		var settings = { rows: 5, columns: 7, slotSize: 50 };
 	
 		var mainGrid = new Grid(settings, tiles);
 		var monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);

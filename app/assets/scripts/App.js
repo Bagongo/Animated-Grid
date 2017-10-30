@@ -68,6 +68,17 @@ class Grid {
     this.slotSize = settings.slotSize;
     this.technologies = [];
     this.initData(data);
+    this.checkSettings();
+  }
+
+  checkSettings()
+  {
+  	if(this.totalSlots >= this.technologies.length)
+  	{
+  		console.log("Grid dimensions exceeded available technologies...");
+  		return false
+  	}
+
     this.virtualGrid = this.createVirtualGrid();
   }
 
@@ -314,7 +325,7 @@ class GridController{
 		this.grid = this.manager.grid;
 
 		this.ACTION_PARAMS = {	
-			last: this.returnRandomInRange(0, 1),	
+			last: null,	
 			0: {action: "row", lastTarget: null, direction: {0: "left", 1: "right", last: null}},
 			1: {action: "column", lastTarget: null, direction: {0: "up", 1: "down", last: null}}
 		};
@@ -336,19 +347,30 @@ class GridController{
 		{
 			actionIdx = this.returnRandomInRange(0, 1);
 			direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0,1)];
+			action = this.ACTION_PARAMS[actionIdx].action;
+			range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
+			target = this.returnRandomInRange(1, range);
+
+			if(actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget)
+			{
+				this.randomizer(random);
+				console.log("recalled rand");
+				return;
+			}
 		}
 		else
 		{
 			actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
-			this.ACTION_PARAMS.last = actionIdx;
 			directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
 			this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
 			direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
+			action = this.ACTION_PARAMS[actionIdx].action;
+			range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
+			target = this.returnRandomInRange(1, range);
 		}
 
-		action = this.ACTION_PARAMS[actionIdx].action;
-		range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-		target = this.returnRandomInRange(1, range);
+		this.ACTION_PARAMS.last = actionIdx;	
+		this.ACTION_PARAMS[actionIdx].lastTarget = target;
 
 		this.startAction(action, target, direction);
 	}
@@ -382,7 +404,7 @@ class Monitor{
 
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {rows: 5, columns: 8, slotSize: 50};
+	let settings = {rows: 5, columns: 7, slotSize: 50};
 
 	const mainGrid = new Grid(settings, tiles);
 	const monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
