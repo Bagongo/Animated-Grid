@@ -1,64 +1,5 @@
 var $ = require("jquery");
-
-let technologies = {
-	affinityDesign: "affinity_design.png",
-	affinityPhoto: "affinity_photo.png",
-	ajax: "ajax.png",
-	android: "android.png",
-	apache: "apache.png",
-	bootstrap: "bootstrap.png",
-	canon: "canon.png",
-	capistrano: "capistrano.png",
-	chrome: "chrome.png",
-	coofee: "coofee.png",
-	docker: "docker.png",
-	duckduckgo: "duckduckgo.png",
-	elasticsearch: "elasticsearch.png",
-	firefox: "firefox.png",
-	git: "git.png",
-	github: "github.png",
-	gitlab: "gitlab.png",
-	goggleAnalitycs: "goggle_anal.png",
-	google: "google.png",
-	greensock: "greensock.png",
-	groundwork: "groundwork.png",
-	gulp: "gulp.png",
-	gumby: "gumby.png",
-	html: "html.png",
-	javascript: "javascript.png",
-	joomla: "joomla.png",
-	jquery: "jquery.png",
-	magento: "magento.png",
-	mariadb: "mariadb.png",
-	mongodb: "mongodb.png",
-	mysql: "mysql.png",
-	nginx: "nginx.png",
-	nodejs: "nodejs.png",
-	openproject: "openproject.png",
-	openzfs: "openzfs.png",
-	photoshop: "photoshop.png",
-	php: "php.png",
-	portainer: "portainer.png",
-	postgresql: "postgresql.png",
-	postman: "postman.png",
-	rails: "rails.png",
-	react: "react.png",
-	redis: "redis.png",
-	rocketchat: "rocketchat.png",
-	ruby: "ruby.png",
-	sass: "sass.png",
-	semrush: "semrush.png",
-	stackoverflow: "stackoverflow.png",
-	sublimetext: "sublimetext.png",
-	susy: "susy.png",
-	telegram: "telegram.png",
-	ubuntu: "ubuntu.png",
-	unsplash: "unsplash.png",
-	webpack: "webpack.png",
-	wekan: "wekan.png",
-	wordpress: "wordpress.png",
-	xen: "xen.png"
-};
+let technologies = require("./modules/technologies.js");
 
 class Technology{
 	constructor(name, path){
@@ -182,7 +123,7 @@ class GridManager {
 
 	buildHtmlObj(tech)
 	{
-		var localPath = "/assets/images/";
+		var localPath = "./assets/images/";
 		return "<div><img src='" + localPath + tech.path + "' alt='" + tech.name + "' /></div>";
 	}
 
@@ -415,7 +356,7 @@ class Monitor{
 		{
 			let listItem = this.list[i].name;
 			let pathToItem = this.list[i].path;
-			this.listElement.prepend("<li><img src='/assets/images/" + pathToItem + "' /> " + listItem + "</li>");
+			this.listElement.prepend("<li><img src='./assets/images/" + pathToItem + "' /> " + listItem + "</li>");
 		}
 	}
 

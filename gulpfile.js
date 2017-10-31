@@ -17,7 +17,6 @@ watch = require('gulp-watch'),
 rev = require('gulp-rev');
 
 gulp.task('watch', function() {
-
   browserSync.init({
     notify: false,
     server: {
@@ -79,10 +78,15 @@ gulp.task("previewDist", function(){
 });
 
 gulp.task("deleteDistFolder", function(){
-  return del("./dist");
+  return del("./docs");
 });
 
-gulp.task("usemin", ["deleteDistFolder", "styles", "scripts"], function(){
+gulp.task("copyImages", function(){
+  return gulp.src(['./app/assets/images/**/*'])
+  .pipe(gulp.dest('./docs/assets/images'));
+});
+
+gulp.task("usemin", ["deleteDistFolder", "copyImages", "styles", "scripts"], function(){
   return gulp.src("./app/index.html")
   .pipe(usemin({
     css: [function(){return rev();}, function(){return cssnano();}],
