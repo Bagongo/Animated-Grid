@@ -1,49 +1,63 @@
 var $ = require("jquery");
 
-let tiles = {
-    aqua: "#00ffff",
-    azure: "#f0ffff",
-    beige: "#f5f5dc",
-    black: "#000000",
-    blue: "#0000ff",
-    brown: "#a52a2a",
-    cyan: "#00ffff",
-    darkblue: "#00008b",
-    darkcyan: "#008b8b",
-    darkgrey: "#a9a9a9",
-    darkgreen: "#006400",
-    darkkhaki: "#bdb76b",
-    darkmagenta: "#8b008b",
-    darkolivegreen: "#556b2f",
-    darkorange: "#ff8c00",
-    darkorchid: "#9932cc",
-    darkred: "#8b0000",
-    darksalmon: "#e9967a",
-    darkviolet: "#9400d3",
-    fuchsia: "#ff00ff",
-    gold: "#ffd700",
-    green: "#008000",
-    indigo: "#4b0082",
-    khaki: "#f0e68c",
-    lightblue: "#add8e6",
-    lightcyan: "#e0ffff",
-    lightgreen: "#90ee90",
-    lightgrey: "#d3d3d3",
-    lightpink: "#ffb6c1",
-    lightyellow: "#ffffe0",
-    lime: "#00ff00",
-    magenta: "#ff00ff",
-    maroon: "#800000",
-    navy: "#000080",
-    olive: "#808000",
-    orange: "#ffa500",
-    pink: "#ffc0cb",
-    purple: "#800080",
-    violet: "#800080",
-    red: "#ff0000",
-    silver: "#c0c0c0",
-    white: "#ffffff",
-    yellow: "#ffff00"
+let technologies = {
+	affinityDesign: "affinity_design.png",
+	affinityPhoto: "affinity_photo.png",
+	ajax: "ajax.png",
+	android: "android.png",
+	apache: "apache.png",
+	bootstrap: "bootstrap.png",
+	canon: "canon.png",
+	capistrano: "capistrano.png",
+	chrome: "chrome.png",
+	coofee: "coofee.png",
+	docker: "docker.png",
+	duckduckgo: "duckduckgo.png",
+	elasticsearch: "elasticsearch.png",
+	firefox: "firefox.png",
+	git: "git.png",
+	github: "github.png",
+	gitlab: "gitlab.png",
+	goggleAnalitycs: "goggle_anal.png",
+	google: "google.png",
+	greensock: "greensock.png",
+	groundwork: "groundwork.png",
+	gulp: "gulp.png",
+	gumby: "gumby.png",
+	html: "html.png",
+	javascript: "javascript.png",
+	joomla: "joomla.png",
+	jquery: "jquery.png",
+	magento: "magento.png",
+	mariadb: "mariadb.png",
+	mongodb: "mongodb.png",
+	mysql: "mysql.png",
+	nginx: "nginx.png",
+	nodejs: "nodejs.png",
+	openproject: "openproject.png",
+	openzfs: "openzfs.png",
+	photoshop: "photoshop.png",
+	php: "php.png",
+	portainer: "portainer.png",
+	postgresql: "postgresql.png",
+	postman: "postman.png",
+	rails: "rails.png",
+	react: "react.png",
+	redis: "redis.png",
+	rocketchat: "rocketchat.png",
+	ruby: "ruby.png",
+	sass: "sass.png",
+	semrush: "semrush.png",
+	stackoverflow: "stackoverflow.png",
+	sublimetext: "sublimetext.png",
+	susy: "susy.png",
+	telegram: "telegram.png",
+	ubuntu: "ubuntu.png",
+	unsplash: "unsplash.png",
+	webpack: "webpack.png",
+	wekan: "wekan.png",
+	wordpress: "wordpress.png",
+	xen: "xen.png"
 };
 
 class Technology{
@@ -152,7 +166,7 @@ class GridManager {
 
 	createAndInsertTile(tech, slot)
 	{
-		var $tile = $("<div></div>");
+		var $tile = $(this.buildHtmlObj(tech));
 		$tile.addClass("tile");
 		$tile.css({ "top": (slot.virtualCoords.y - 1) * this.grid.slotSize + "px", 
 					"left": (slot.virtualCoords.x - 1) * this.grid.slotSize + "px",
@@ -164,6 +178,12 @@ class GridManager {
 		slot.technology = tech;
 		slot.tile = $tile;
 		this.frame.append($tile);
+	}
+
+	buildHtmlObj(tech)
+	{
+		var localPath = "/assets/images/";
+		return "<div><img src='" + localPath + tech.path + "' alt='" + tech.name + "' /></div>";
 	}
 
 	prepRow(rowIdx, dir)
@@ -394,8 +414,8 @@ class Monitor{
 		for(let i=0; i < this.list.length; i++)
 		{
 			let listItem = this.list[i].name;
-			let color = this.list[i].path;
-			this.listElement.prepend("<li style='color:" + color + "'>" + listItem + "</li>");
+			let pathToItem = this.list[i].path;
+			this.listElement.prepend("<li><img src='/assets/images/" + pathToItem + "' /> " + listItem + "</li>");
 		}
 	}
 
@@ -403,12 +423,9 @@ class Monitor{
 
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {rows: 4, columns: 5, slotSize: 75};
+	let settings = {rows: 5, columns: 7, slotSize: 75};
 
-	var cazzi = "cazzi";
-	console.log(cazzi);
-
-	const mainGrid = new Grid(settings, tiles);
+	const mainGrid = new Grid(settings, technologies);
 	const monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
 	const gridManager = new GridManager(mainGrid, 'main-grid', monitor);
 	const gridController = new GridController(gridManager, false, false);

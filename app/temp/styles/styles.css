@@ -28,22 +28,61 @@ body, html{
 #main-grid{
 	position: relative;
 	overflow: hidden;
-	background: black;
-	box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-	border: 1px solid black;
-}
+	background: rgba(255, 255, 255, 0.4);
+/* 	background: white;
+ */	box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+/* 	border: 1px solid black;
+ */}
 
 .tile{
 	position: absolute;
 	box-sizing: border-box;
-	border: 1px solid black;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: center;
+	    -ms-flex-pack: center;
+	        justify-content: center;
+	-webkit-box-align: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+	padding: 15px;
+/* 	border: 1px solid black;
+ */}
+
+.tile img{
+	width: 100%;
 }
 
 #monitor{
-	width: 200px;
+	width: 150px;
 	padding: 1rem;
-	background: rgba(0, 0, 0, .8);
+	background: rgba(0, 0, 0, 0.4);
 	font-family: monospace;
+	color: white;
+}
+
+#monitor ul{
+	padding: 5px 10px;
+	list-style-type: none; 
+}
+
+#monitor li{
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-pack: start;
+	    -ms-flex-pack: start;
+	        justify-content: flex-start;
+	-webkit-box-align: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+	margin: 12px 0;
+}
+
+#monitor img{
+	margin: 0 5px 0 0;
+	width: 16px;
 }
 
 #controls{
@@ -65,5 +104,9 @@ body, html{
 	height: 50px;
 	font-size: 1rem;
 	font-weight: 700;
+}
+
+#go:focus{
+	outline: none;
 }
 

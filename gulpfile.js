@@ -70,26 +70,25 @@ gulp.task('scripts', function(callback) {
 });
 
 gulp.task("previewDist", function(){
-	browserSync.init({
-	    notify: false,
-	    server: {
-	      baseDir: "dist"
-	    }
-	});
+  browserSync.init({
+      notify: false,
+      server: {
+        baseDir: "dist"
+      }
+  });
 });
 
 gulp.task("deleteDistFolder", function(){
-	return del("./dist");
+  return del("./dist");
 });
 
 gulp.task("usemin", ["deleteDistFolder", "styles", "scripts"], function(){
-	return gulp.src("./app/index.html")
-	.pipe(usemin({
-		css: [function(){return rev();}, function(){return cssnano();}],
-		js: [function(){return rev();}, function(){return uglify();}]
-	}))
-	.pipe(gulp.dest("./docs"));
+  return gulp.src("./app/index.html")
+  .pipe(usemin({
+    css: [function(){return rev();}, function(){return cssnano();}],
+    js: [function(){return rev();}, function(){return uglify();}]
+  }))
+  .pipe(gulp.dest("./docs"));
 });
 
 gulp.task("build", ["deleteDistFolder", "usemin"]); 
-
