@@ -1,4 +1,5 @@
 module.exports = {
+  debug: true,
   devtool:"source-map",
   entry: {
     App: "./app/assets/scripts/App.js",

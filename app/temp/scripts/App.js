@@ -387,7 +387,6 @@
 	
 					if (actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
 						this.randomizer(random);
-						console.log("recalled rand");
 						return;
 					}
 				} else {
@@ -441,7 +440,10 @@
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	
-		var settings = { rows: 5, columns: 7, slotSize: 50 };
+		var settings = { rows: 4, columns: 5, slotSize: 75 };
+	
+		var cazzi = "cazzi";
+		console.log(cazzi);
 	
 		var mainGrid = new Grid(settings, tiles);
 		var monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);

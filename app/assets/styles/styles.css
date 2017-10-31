@@ -11,6 +11,7 @@ body, html{
 	width: 100%;
 	height: 100%;
 	display: flex;
+	flex-flow: row wrap;
 	justify-content: space-around;
 	align-items: center;
 	background: aquamarine;
@@ -27,7 +28,14 @@ body, html{
 .tile{
 	position: absolute;
 	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	border: 1px solid black;
+}
+
+.tile img{
+	width: 100%;
 }
 
 #monitor{

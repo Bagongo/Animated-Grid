@@ -354,7 +354,6 @@ class GridController{
 			if(actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget)
 			{
 				this.randomizer(random);
-				console.log("recalled rand");
 				return;
 			}
 		}
@@ -404,7 +403,10 @@ class Monitor{
 
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {rows: 5, columns: 7, slotSize: 50};
+	let settings = {rows: 4, columns: 5, slotSize: 75};
+
+	var cazzi = "cazzi";
+	console.log(cazzi);
 
 	const mainGrid = new Grid(settings, tiles);
 	const monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
