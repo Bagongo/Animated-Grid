@@ -16,27 +16,54 @@ class Slot{
 
 class Grid {
 
-  constructor (settings, data, blanks) {    
+  constructor (settings, data, selector) {    
     this.slotsX = settings.columns;
     this.slotsY = settings.rows;
     this.totalSlots = this.slotsX * this.slotsY;
     this.slotSize = settings.slotSize;
+    this.tracks = settings.tracks;
     this.blanks = settings.blanks;
     this.tileBgs = settings.bgs;
     this.technologies = [];
+	this.frame = $("#" + selector);
     this.initData(data);
-    this.checkSettings();
+    this.checkTracks(this.tracks);
+    this.checkSlots();
+    this.virtualGrid = this.createVirtualGrid();
+    this.initGrid();
   }
 
-  checkSettings()
+  checkTracks(tracks)
+  {
+	if(!tracks)
+		this.buildTracks();
+	else
+	{
+		for(let i=0; i < this.tracks.row.length; i++)
+		{
+			if(this.tracks.row[i] > this.slotsY)
+				console.log("Error in tracks count");
+		}
+
+		for(let j=0; j < this.tracks.column.length; j++)
+		{
+			if(this.tracks.column[j] > this.slotsX)
+				console.log("Error in tracks count");
+		}
+	}
+  }
+
+  checkSlots()
   {
   	if(this.totalSlots >= this.technologies.length)
-  	{
   		console.log("Grid dimensions exceeded available technologies...");
-  		return false
-  	}
+  }
 
-    this.virtualGrid = this.createVirtualGrid();
+  buildTracks()
+  {
+	  	this.tracks = {};
+		this.tracks.row = [...Array(this.slotsY+1).keys()].slice(1);
+		this.tracks.column = [...Array(this.slotsY+1).keys()].slice(1);
   }
 
   initData(data)
@@ -76,6 +103,13 @@ class Grid {
   	return vGrid;
   }
 
+  initGrid()
+  {
+	this.frame.css({"width": (this.slotsX * this.slotSize) + "px",
+		"height": (this.slotsY * this.slotSize) + "px"
+	});	
+  }
+
   returnTech()
   {
  	 return this.technologies.shift();
@@ -85,21 +119,12 @@ class Grid {
 
 class GridManager {
 
-	constructor(grid, selector, monitor){
+	constructor(grid, monitor){
 		this.grid = grid;
-		this.frame = $("#" + selector);
 		this.monitor = monitor;
 		this.locked = false;
 
-	    this.initGrid();
 	    this.populateGrid();
-	}
-
-	initGrid()
-	{
-		this.frame.css({"width": (this.grid.slotsX * this.grid.slotSize) + "px",
-						"height": (this.grid.slotsY * this.grid.slotSize) + "px"
-		});
 	}
 
 	populateGrid()
@@ -108,9 +133,11 @@ class GridManager {
 		{
 			for(let j=1; j < this.grid.virtualGrid[i].length - 1; j++)
 			{
-				var tech = this.grid.returnTech();
-				var slot = this.grid.virtualGrid[i][j];
-				this.createAndInsertTile(tech, slot);				
+				if(this.grid.tracks["row"].includes(i) || this.grid.tracks["column"].includes(j))
+				{   var tech = this.grid.returnTech();
+					var slot = this.grid.virtualGrid[i][j];
+					this.createAndInsertTile(tech, slot);				
+				}
 			}
 		}
 	}
@@ -128,7 +155,7 @@ class GridManager {
 
 		slot.technology = tech;
 		slot.tile = $tile;
-		this.frame.append($tile);
+		this.grid.frame.append($tile);
 	}
 
 	buildHtmlObj(tech)
@@ -318,17 +345,18 @@ class GridController{
 			this.manager.prepColumn(target, dir);
 	}
 
-	randomizer(random, blank)
+	randomizer(random)
 	{
-		var actionIdx, directionIdx, range, action, target, direction;
+		var actionIdx, directionIdx, range, action, targetIdx, target, direction;
+		var tracks = this.grid.tracks;
 
 		if(random)
 		{
 			actionIdx = this.returnRandomInRange(0, 1);
 			direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0,1)];
 			action = this.ACTION_PARAMS[actionIdx].action;
-			range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-			target = this.returnRandomInRange(1, range);
+			range = tracks[action].length - 1;
+			targetIdx = this.returnRandomInRange(0, range);
 
 			if(actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget)
 			{
@@ -343,10 +371,11 @@ class GridController{
 			this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
 			direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
 			action = this.ACTION_PARAMS[actionIdx].action;
-			range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-			target = this.returnRandomInRange(1, range);
+			range = tracks[action].length - 1;
+			targetIdx = this.returnRandomInRange(0, range);
 		}
 
+		target = tracks[action][targetIdx];
 		this.ACTION_PARAMS.last = actionIdx;	
 		this.ACTION_PARAMS[actionIdx].lastTarget = target;
 
@@ -390,15 +419,16 @@ document.addEventListener('DOMContentLoaded', function () {
 		$(".tile").remove();
 
 		let settings = {rows: 5, 
-						columns: 7,
+						columns: 10,
 						slotSize: 75,
 						blanks: $("#blanks").val(), 
-						bgs: document.getElementById("tiled").checked? ["darkgrey", "grey", "lightgrey"] : null
+						bgs: document.getElementById("tiled").checked? ["darkgrey", "grey", "lightgrey"] : null,
+						tracks: null
 					};
 
-		mainGrid = new Grid(settings, technologies);
+		mainGrid = new Grid(settings, technologies, 'main-grid');
 		monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
-		gridManager = new GridManager(mainGrid, 'main-grid', monitor);
+		gridManager = new GridManager(mainGrid, monitor);
 		gridController = new GridController(gridManager);
 
 		monitor.updateList();

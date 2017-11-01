@@ -48,6 +48,8 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var $ = __webpack_require__(1);
@@ -66,29 +68,49 @@
 	};
 	
 	var Grid = function () {
-		function Grid(settings, data, blanks) {
+		function Grid(settings, data, selector) {
 			_classCallCheck(this, Grid);
 	
 			this.slotsX = settings.columns;
 			this.slotsY = settings.rows;
 			this.totalSlots = this.slotsX * this.slotsY;
 			this.slotSize = settings.slotSize;
+			this.tracks = settings.tracks;
 			this.blanks = settings.blanks;
 			this.tileBgs = settings.bgs;
 			this.technologies = [];
+			this.frame = $("#" + selector);
 			this.initData(data);
-			this.checkSettings();
+			this.checkTracks(this.tracks);
+			this.checkSlots();
+			this.virtualGrid = this.createVirtualGrid();
+			this.initGrid();
 		}
 	
 		_createClass(Grid, [{
-			key: "checkSettings",
-			value: function checkSettings() {
-				if (this.totalSlots >= this.technologies.length) {
-					console.log("Grid dimensions exceeded available technologies...");
-					return false;
-				}
+			key: "checkTracks",
+			value: function checkTracks(tracks) {
+				if (!tracks) this.buildTracks();else {
+					for (var i = 0; i < this.tracks.row.length; i++) {
+						if (this.tracks.row[i] > this.slotsY) console.log("Error in tracks count");
+					}
 	
-				this.virtualGrid = this.createVirtualGrid();
+					for (var j = 0; j < this.tracks.column.length; j++) {
+						if (this.tracks.column[j] > this.slotsX) console.log("Error in tracks count");
+					}
+				}
+			}
+		}, {
+			key: "checkSlots",
+			value: function checkSlots() {
+				if (this.totalSlots >= this.technologies.length) console.log("Grid dimensions exceeded available technologies...");
+			}
+		}, {
+			key: "buildTracks",
+			value: function buildTracks() {
+				this.tracks = {};
+				this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
+				this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
 			}
 		}, {
 			key: "initData",
@@ -125,6 +147,13 @@
 				return vGrid;
 			}
 		}, {
+			key: "initGrid",
+			value: function initGrid() {
+				this.frame.css({ "width": this.slotsX * this.slotSize + "px",
+					"height": this.slotsY * this.slotSize + "px"
+				});
+			}
+		}, {
 			key: "returnTech",
 			value: function returnTech() {
 				return this.technologies.shift();
@@ -135,33 +164,26 @@
 	}();
 	
 	var GridManager = function () {
-		function GridManager(grid, selector, monitor) {
+		function GridManager(grid, monitor) {
 			_classCallCheck(this, GridManager);
 	
 			this.grid = grid;
-			this.frame = $("#" + selector);
 			this.monitor = monitor;
 			this.locked = false;
 	
-			this.initGrid();
 			this.populateGrid();
 		}
 	
 		_createClass(GridManager, [{
-			key: "initGrid",
-			value: function initGrid() {
-				this.frame.css({ "width": this.grid.slotsX * this.grid.slotSize + "px",
-					"height": this.grid.slotsY * this.grid.slotSize + "px"
-				});
-			}
-		}, {
 			key: "populateGrid",
 			value: function populateGrid() {
 				for (var i = 1; i < this.grid.virtualGrid.length - 1; i++) {
 					for (var j = 1; j < this.grid.virtualGrid[i].length - 1; j++) {
-						var tech = this.grid.returnTech();
-						var slot = this.grid.virtualGrid[i][j];
-						this.createAndInsertTile(tech, slot);
+						if (this.grid.tracks["row"].includes(i) || this.grid.tracks["column"].includes(j)) {
+							var tech = this.grid.returnTech();
+							var slot = this.grid.virtualGrid[i][j];
+							this.createAndInsertTile(tech, slot);
+						}
 					}
 				}
 			}
@@ -179,7 +201,7 @@
 	
 				slot.technology = tech;
 				slot.tile = $tile;
-				this.frame.append($tile);
+				this.grid.frame.append($tile);
 			}
 		}, {
 			key: "buildHtmlObj",
@@ -350,15 +372,16 @@
 			}
 		}, {
 			key: "randomizer",
-			value: function randomizer(random, blank) {
-				var actionIdx, directionIdx, range, action, target, direction;
+			value: function randomizer(random) {
+				var actionIdx, directionIdx, range, action, targetIdx, target, direction;
+				var tracks = this.grid.tracks;
 	
 				if (random) {
 					actionIdx = this.returnRandomInRange(0, 1);
 					direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
 					action = this.ACTION_PARAMS[actionIdx].action;
-					range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-					target = this.returnRandomInRange(1, range);
+					range = tracks[action].length - 1;
+					targetIdx = this.returnRandomInRange(0, range);
 	
 					if (actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
 						this.randomizer(random);
@@ -370,10 +393,11 @@
 					this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
 					direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
 					action = this.ACTION_PARAMS[actionIdx].action;
-					range = action === "row" ? this.grid.slotsY : this.grid.slotsX;
-					target = this.returnRandomInRange(1, range);
+					range = tracks[action].length - 1;
+					targetIdx = this.returnRandomInRange(0, range);
 				}
 	
+				target = tracks[action][targetIdx];
 				this.ACTION_PARAMS.last = actionIdx;
 				this.ACTION_PARAMS[actionIdx].lastTarget = target;
 	
@@ -423,15 +447,16 @@
 			$(".tile").remove();
 	
 			var settings = { rows: 5,
-				columns: 7,
+				columns: 10,
 				slotSize: 75,
 				blanks: $("#blanks").val(),
-				bgs: document.getElementById("tiled").checked ? ["darkgrey", "grey", "lightgrey"] : null
+				bgs: document.getElementById("tiled").checked ? ["darkgrey", "grey", "lightgrey"] : null,
+				tracks: null
 			};
 	
-			mainGrid = new Grid(settings, technologies);
+			mainGrid = new Grid(settings, technologies, 'main-grid');
 			monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
-			gridManager = new GridManager(mainGrid, 'main-grid', monitor);
+			gridManager = new GridManager(mainGrid, monitor);
 			gridController = new GridController(gridManager);
 	
 			monitor.updateList();
