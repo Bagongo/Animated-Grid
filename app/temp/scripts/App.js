@@ -110,7 +110,7 @@
 			value: function buildTracks() {
 				this.tracks = {};
 				this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
-				this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
+				this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsX + 1).keys())).slice(1);
 			}
 		}, {
 			key: "initData",
@@ -372,33 +372,23 @@
 			}
 		}, {
 			key: "randomizer",
-			value: function randomizer(random) {
-				var actionIdx, directionIdx, range, action, targetIdx, target, direction;
+			value: function randomizer() {
+				var actionIdx, directionIdx, action, targetRange, targetIdx, target, direction;
 				var tracks = this.grid.tracks;
 	
-				if (random) {
-					actionIdx = this.returnRandomInRange(0, 1);
-					direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
-					action = this.ACTION_PARAMS[actionIdx].action;
-					range = tracks[action].length - 1;
-					targetIdx = this.returnRandomInRange(0, range);
+				actionIdx = this.returnRandomInRange(0, 1);
+				direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
+				action = this.ACTION_PARAMS[actionIdx].action;
+				targetRange = tracks[action].length - 1;
+				targetIdx = this.returnRandomInRange(0, targetRange);
+				target = tracks[action][targetIdx];
 	
-					if (actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
-						this.randomizer(random);
-						return;
-					}
-				} else {
-					actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
-					directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
-					this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
-					direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
-					action = this.ACTION_PARAMS[actionIdx].action;
-					range = tracks[action].length - 1;
-					targetIdx = this.returnRandomInRange(0, range);
+				if (action === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
+					this.randomizer();
+					return;
 				}
 	
-				target = tracks[action][targetIdx];
-				this.ACTION_PARAMS.last = actionIdx;
+				this.ACTION_PARAMS.last = action;
 				this.ACTION_PARAMS[actionIdx].lastTarget = target;
 	
 				this.startAction(action, target, direction);
@@ -451,7 +441,7 @@
 				slotSize: 75,
 				blanks: $("#blanks").val(),
 				bgs: document.getElementById("tiled").checked ? ["darkgrey", "grey", "lightgrey"] : null,
-				tracks: null
+				tracks: { row: [2, 3], column: [4, 8] }
 			};
 	
 			mainGrid = new Grid(settings, technologies, 'main-grid');
@@ -465,10 +455,8 @@
 		$("#go").on("click", function (event) {
 			event.preventDefault();
 	
-			var random = document.getElementById("randomize").checked;
-	
 			if (!gridController.manager.locked) {
-				gridController.randomizer(random);
+				gridController.randomizer();
 				gridController.manager.locked = true;
 			}
 		});

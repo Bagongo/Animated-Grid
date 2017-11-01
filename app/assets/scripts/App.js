@@ -63,7 +63,7 @@ class Grid {
   {
 	  	this.tracks = {};
 		this.tracks.row = [...Array(this.slotsY+1).keys()].slice(1);
-		this.tracks.column = [...Array(this.slotsY+1).keys()].slice(1);
+		this.tracks.column = [...Array(this.slotsX+1).keys()].slice(1);
   }
 
   initData(data)
@@ -345,38 +345,25 @@ class GridController{
 			this.manager.prepColumn(target, dir);
 	}
 
-	randomizer(random)
+	randomizer()
 	{
-		var actionIdx, directionIdx, range, action, targetIdx, target, direction;
+		var actionIdx, directionIdx, action, targetRange, targetIdx, target, direction;
 		var tracks = this.grid.tracks;
 
-		if(random)
-		{
-			actionIdx = this.returnRandomInRange(0, 1);
-			direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0,1)];
-			action = this.ACTION_PARAMS[actionIdx].action;
-			range = tracks[action].length - 1;
-			targetIdx = this.returnRandomInRange(0, range);
-
-			if(actionIdx === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget)
-			{
-				this.randomizer(random);
-				return;
-			}
-		}
-		else
-		{
-			actionIdx = this.ACTION_PARAMS.last === 1 ? 0 : 1;
-			directionIdx = this.ACTION_PARAMS[actionIdx].direction.last === 1 ? 0 : 1;
-			this.ACTION_PARAMS[actionIdx].direction.last = directionIdx;
-			direction = this.ACTION_PARAMS[actionIdx].direction[directionIdx];
-			action = this.ACTION_PARAMS[actionIdx].action;
-			range = tracks[action].length - 1;
-			targetIdx = this.returnRandomInRange(0, range);
-		}
-
+		actionIdx = this.returnRandomInRange(0, 1);
+		direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0,1)];
+		action = this.ACTION_PARAMS[actionIdx].action;
+		targetRange = tracks[action].length - 1;
+		targetIdx = this.returnRandomInRange(0, targetRange);
 		target = tracks[action][targetIdx];
-		this.ACTION_PARAMS.last = actionIdx;	
+
+		if(action === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget)
+		{
+			this.randomizer();
+			return;
+		}
+		
+		this.ACTION_PARAMS.last = action;	
 		this.ACTION_PARAMS[actionIdx].lastTarget = target;
 
 		this.startAction(action, target, direction);
@@ -423,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function () {
 						slotSize: 75,
 						blanks: $("#blanks").val(), 
 						bgs: document.getElementById("tiled").checked? ["darkgrey", "grey", "lightgrey"] : null,
-						tracks: null
+						tracks: {row: [2, 3], column: [4, 8]}
 					};
 
 		mainGrid = new Grid(settings, technologies, 'main-grid');
@@ -437,11 +424,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	$("#go").on("click", function(event){
 		event.preventDefault();
 
-		var random = document.getElementById("randomize").checked;
-
 		if(!gridController.manager.locked)
 		{
-			gridController.randomizer(random);
+			gridController.randomizer();
 			gridController.manager.locked = true;
 		}
 	});
