@@ -58,4 +58,4 @@ let technologies = {
 	xen: "xen.png"
 };
 
-module.exports = technologies;
+export default technologies;

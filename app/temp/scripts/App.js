@@ -46,386 +46,29 @@
 
 	"use strict";
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _technologies = __webpack_require__(1);
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	var _technologies2 = _interopRequireDefault(_technologies);
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var _grid = __webpack_require__(2);
 	
-	var $ = __webpack_require__(1);
-	var technologies = __webpack_require__(2);
+	var _grid2 = _interopRequireDefault(_grid);
 	
-	var Technology = function Technology(name, path) {
-		_classCallCheck(this, Technology);
+	var _gridManager = __webpack_require__(6);
 	
-		this.name = name, this.path = path;
-	};
+	var _gridManager2 = _interopRequireDefault(_gridManager);
 	
-	var Slot = function Slot(x, y) {
-		_classCallCheck(this, Slot);
+	var _gridController = __webpack_require__(7);
 	
-		this.virtualCoords = { x: x, y: y };
-	};
+	var _gridController2 = _interopRequireDefault(_gridController);
 	
-	var Grid = function () {
-		function Grid(settings, data, selector) {
-			_classCallCheck(this, Grid);
+	var _monitor = __webpack_require__(8);
 	
-			this.slotsX = settings.columns;
-			this.slotsY = settings.rows;
-			this.totalSlots = this.slotsX * this.slotsY;
-			this.slotSize = settings.slotSize;
-			this.tracks = settings.tracks;
-			this.blanks = settings.blanks;
-			this.tileBgs = settings.bgs;
-			this.technologies = [];
-			this.frame = $("#" + selector);
-			this.initData(data);
-			this.checkTracks(this.tracks);
-			this.checkSlots();
-			this.virtualGrid = this.createVirtualGrid();
-			this.initGrid();
-		}
+	var _monitor2 = _interopRequireDefault(_monitor);
 	
-		_createClass(Grid, [{
-			key: "checkTracks",
-			value: function checkTracks(tracks) {
-				if (!tracks) this.buildTracks();else {
-					for (var i = 0; i < this.tracks.row.length; i++) {
-						if (this.tracks.row[i] > this.slotsY) console.log("Error in tracks count");
-					}
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-					for (var j = 0; j < this.tracks.column.length; j++) {
-						if (this.tracks.column[j] > this.slotsX) console.log("Error in tracks count");
-					}
-				}
-			}
-		}, {
-			key: "checkSlots",
-			value: function checkSlots() {
-				if (this.totalSlots >= this.technologies.length) console.log("Grid dimensions exceeded available technologies...");
-			}
-		}, {
-			key: "buildTracks",
-			value: function buildTracks() {
-				this.tracks = {};
-				this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
-				this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsX + 1).keys())).slice(1);
-			}
-		}, {
-			key: "initData",
-			value: function initData(data) {
-				var idx = this.blanks + 1;
-	
-				for (var key in data) {
-					//add a blank every this.blank iterations
-					if (idx % this.blanks === 0) this.technologies.push(new Technology("blank", "blank.png"));
-	
-					var technology = new Technology(key, data[key]);
-					this.technologies.push(technology);
-	
-					idx++;
-				}
-			}
-		}, {
-			key: "createVirtualGrid",
-			value: function createVirtualGrid() {
-				var vGrid = [];
-				var row = [];
-				var idx = 0;
-	
-				for (var i = 0; i <= this.slotsY + 1; i++) {
-					for (var j = 0; j <= this.slotsX + 1; j++) {
-						var newSlot = new Slot(j, i);
-						row.push(newSlot);
-					}
-	
-					vGrid.push(row);
-					row = [];
-				}
-	
-				return vGrid;
-			}
-		}, {
-			key: "initGrid",
-			value: function initGrid() {
-				this.frame.css({ "width": this.slotsX * this.slotSize + "px",
-					"height": this.slotsY * this.slotSize + "px"
-				});
-			}
-		}, {
-			key: "returnTech",
-			value: function returnTech() {
-				return this.technologies.shift();
-			}
-		}]);
-	
-		return Grid;
-	}();
-	
-	var GridManager = function () {
-		function GridManager(grid, monitor) {
-			_classCallCheck(this, GridManager);
-	
-			this.grid = grid;
-			this.monitor = monitor;
-			this.locked = false;
-	
-			this.populateGrid();
-		}
-	
-		_createClass(GridManager, [{
-			key: "populateGrid",
-			value: function populateGrid() {
-				for (var i = 1; i < this.grid.virtualGrid.length - 1; i++) {
-					for (var j = 1; j < this.grid.virtualGrid[i].length - 1; j++) {
-						if (this.grid.tracks["row"].includes(i) || this.grid.tracks["column"].includes(j)) {
-							var tech = this.grid.returnTech();
-							var slot = this.grid.virtualGrid[i][j];
-							this.createAndInsertTile(tech, slot);
-						}
-					}
-				}
-			}
-		}, {
-			key: "createAndInsertTile",
-			value: function createAndInsertTile(tech, slot) {
-				var $tile = $(this.buildHtmlObj(tech));
-				$tile.addClass("tile");
-				$tile.css({ "top": (slot.virtualCoords.y - 1) * this.grid.slotSize + "px",
-					"left": (slot.virtualCoords.x - 1) * this.grid.slotSize + "px",
-					"width": this.grid.slotSize + "px",
-					"height": this.grid.slotSize + "px",
-					"background": this.selectTileBg(tech)
-				});
-	
-				slot.technology = tech;
-				slot.tile = $tile;
-				this.grid.frame.append($tile);
-			}
-		}, {
-			key: "buildHtmlObj",
-			value: function buildHtmlObj(tech) {
-				var localPath = "./assets/images/";
-				return "<div><img src='" + localPath + tech.path + "' alt='" + tech.name + "' /></div>";
-			}
-		}, {
-			key: "selectTileBg",
-			value: function selectTileBg(tech) {
-				if (tech.name !== "blank" && this.grid.tileBgs) return this.grid.tileBgs[Math.floor(Math.random() * this.grid.tileBgs.length)];else return "transparent";
-			}
-		}, {
-			key: "prepRow",
-			value: function prepRow(rowIdx, dir) {
-				var row = this.grid.virtualGrid[rowIdx];
-				var slotToFill = dir === "left" ? row[row.length - 1] : row[0];
-				var newTech = this.grid.returnTech();
-	
-				this.createAndInsertTile(newTech, slotToFill);
-				this.moveRow(row, dir);
-			}
-		}, {
-			key: "moveRow",
-			value: function moveRow(row, dir) {
-				var dirFactor = dir === "left" ? -1 : 1;
-				var callback = this.updateRow.bind(this);
-	
-				for (var i = 0; i < row.length; i++) {
-					if (row[i].hasOwnProperty("tile")) {
-						var lastTile = dir === "left" && i >= row.length - 1 || dir === "right" && i >= row.length - 2 ? true : false;
-						var tile = row[i].tile;
-						var oldPosX = parseInt(tile.css("left"));
-						var newPosX = oldPosX + dirFactor * this.grid.slotSize + "px";
-	
-						if (lastTile) tile.animate({ "left": newPosX }).promise().done(function () {
-							callback(row, dir);
-						});else tile.animate({ "left": newPosX });
-					}
-				}
-			}
-		}, {
-			key: "updateRow",
-			value: function updateRow(row, dir) {
-				var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
-				this.grid.technologies.push(startingSlot.technology);
-				this.destroyTile(startingSlot.tile);
-	
-				this.monitor.updateList();
-	
-				if (dir === "left") {
-					for (var i = 1; i < row.length - 1; i++) {
-						row[i].technology = row[i + 1].technology;
-						row[i].tile = row[i + 1].tile;
-					}
-	
-					this.clearSlot(row[row.length - 1]);
-				} else {
-					for (var i = row.length - 2; i >= 1; i--) {
-						row[i].technology = row[i - 1].technology;
-						row[i].tile = row[i - 1].tile;
-					}
-	
-					this.clearSlot(row[0]);
-				}
-	
-				this.endSequence();
-			}
-		}, {
-			key: "prepColumn",
-			value: function prepColumn(colIdx, dir) {
-				var vGrid = this.grid.virtualGrid;
-				var slotToFill = dir === "up" ? vGrid[vGrid.length - 1][colIdx] : vGrid[0][colIdx];
-				var newTech = this.grid.returnTech();
-				this.createAndInsertTile(newTech, slotToFill);
-				this.moveColumn(colIdx, dir);
-			}
-		}, {
-			key: "moveColumn",
-			value: function moveColumn(colIdx, dir) {
-				var vGrid = this.grid.virtualGrid;
-				var span = dir === "up" ? vGrid.length - 1 : vGrid.length - 2;
-				var dirFactor = dir === "up" ? -1 : 1;
-	
-				var callback = this.updateColumn.bind(this);
-	
-				for (var i = 0; i < vGrid.length; i++) {
-					if (vGrid[i][colIdx].hasOwnProperty("tile")) {
-						var lastTile = i >= span ? true : false;
-						var tile = vGrid[i][colIdx].tile;
-						var oldPosY = parseInt(tile.css("top"));
-						var newPosY = oldPosY + dirFactor * this.grid.slotSize + "px";
-	
-						if (lastTile) tile.animate({ "top": newPosY }).promise().done(function () {
-							callback(colIdx, dir);
-						});else tile.animate({ "top": newPosY });
-					}
-				}
-			}
-		}, {
-			key: "updateColumn",
-			value: function updateColumn(colIdx, dir) {
-				var vGrid = this.grid.virtualGrid;
-				var slotToDel = dir === "up" ? vGrid[1][colIdx] : vGrid[vGrid.length - 2][colIdx];
-	
-				this.grid.technologies.push(slotToDel.technology);
-				this.destroyTile(slotToDel.tile);
-	
-				this.monitor.updateList();
-	
-				if (dir === "up") {
-					for (var i = 1; i < vGrid.length - 1; i++) {
-						vGrid[i][colIdx].technology = vGrid[i + 1][colIdx].technology;
-						vGrid[i][colIdx].tile = vGrid[i + 1][colIdx].tile;
-					}
-	
-					this.clearSlot(vGrid[vGrid.length - 1][colIdx]);
-				} else {
-					for (var _i = vGrid.length - 2; _i >= 1; _i--) {
-						vGrid[_i][colIdx].technology = vGrid[_i - 1][colIdx].technology;
-						vGrid[_i][colIdx].tile = vGrid[_i - 1][colIdx].tile;
-					}
-	
-					this.clearSlot(vGrid[0][colIdx]);
-				}
-	
-				this.endSequence();
-			}
-		}, {
-			key: "clearSlot",
-			value: function clearSlot(slot) {
-				delete slot.technology;
-				delete slot.tile;
-			}
-		}, {
-			key: "destroyTile",
-			value: function destroyTile(tile) {
-				tile.remove();
-			}
-		}, {
-			key: "endSequence",
-			value: function endSequence() {
-				this.locked = false;
-			}
-		}]);
-	
-		return GridManager;
-	}();
-	
-	var GridController = function () {
-		function GridController(gridMan) {
-			_classCallCheck(this, GridController);
-	
-			this.manager = gridMan;
-			this.grid = this.manager.grid;
-	
-			this.ACTION_PARAMS = {
-				last: null,
-				0: { action: "row", lastTarget: null, direction: { 0: "left", 1: "right", last: null } },
-				1: { action: "column", lastTarget: null, direction: { 0: "up", 1: "down", last: null } }
-			};
-		}
-	
-		_createClass(GridController, [{
-			key: "startAction",
-			value: function startAction(action, target, dir) {
-				if (action === "row") this.manager.prepRow(target, dir);else this.manager.prepColumn(target, dir);
-			}
-		}, {
-			key: "randomizer",
-			value: function randomizer() {
-				var actionIdx, directionIdx, action, targetRange, targetIdx, target, direction;
-				var tracks = this.grid.tracks;
-	
-				actionIdx = this.returnRandomInRange(0, 1);
-				direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
-				action = this.ACTION_PARAMS[actionIdx].action;
-				targetRange = tracks[action].length - 1;
-				targetIdx = this.returnRandomInRange(0, targetRange);
-				target = tracks[action][targetIdx];
-	
-				if (action === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
-					this.randomizer();
-					return;
-				}
-	
-				this.ACTION_PARAMS.last = action;
-				this.ACTION_PARAMS[actionIdx].lastTarget = target;
-	
-				this.startAction(action, target, direction);
-			}
-		}, {
-			key: "returnRandomInRange",
-			value: function returnRandomInRange(min, max) {
-				return Math.floor(Math.random() * (max - min + 1)) + min;
-			}
-		}]);
-	
-		return GridController;
-	}();
-	
-	var Monitor = function () {
-		function Monitor(listEl, list) {
-			_classCallCheck(this, Monitor);
-	
-			this.listElement = listEl;
-			this.list = list;
-		}
-	
-		_createClass(Monitor, [{
-			key: "updateList",
-			value: function updateList() {
-				this.listElement.empty();
-	
-				for (var i = 0; i < this.list.length; i++) {
-					var listItem = this.list[i].name;
-					var pathToItem = this.list[i].path;
-					this.listElement.prepend("<li><img src='./assets/images/" + pathToItem + "' /> " + listItem + "</li>");
-				}
-			}
-		}]);
-	
-		return Monitor;
-	}();
+	var $ = __webpack_require__(5);
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	
@@ -433,7 +76,7 @@
 	
 		$("#create-grid").on("click", function (event) {
 			event.preventDefault();
-	
+			clearInterval(interval);
 			$(".tile").remove();
 	
 			var settings = { rows: 5,
@@ -441,29 +84,273 @@
 				slotSize: 75,
 				blanks: $("#blanks").val(),
 				bgs: document.getElementById("tiled").checked ? ["darkgrey", "grey", "lightgrey"] : null,
-				tracks: { row: [2, 3], column: [4, 8] }
+				tracks: null
 			};
 	
-			mainGrid = new Grid(settings, technologies, 'main-grid');
-			monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
-			gridManager = new GridManager(mainGrid, monitor);
-			gridController = new GridController(gridManager);
+			mainGrid = new _grid2.default(settings, _technologies2.default, 'main-grid');
+			monitor = new _monitor2.default($("#monitor > ul"), mainGrid.technologies);
+			gridManager = new _gridManager2.default(mainGrid, monitor);
+			gridController = new _gridController2.default(gridManager);
 	
 			monitor.updateList();
 		});
 	
+		var interval;
+	
 		$("#go").on("click", function (event) {
 			event.preventDefault();
+			clearInterval(interval);
 	
+			interval = setInterval(startAction, 700);
+		});
+	
+		function startAction() {
 			if (!gridController.manager.locked) {
 				gridController.randomizer();
 				gridController.manager.locked = true;
 			}
-		});
+		}
 	});
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	var technologies = {
+		affinityDesign: "affinity_design.png",
+		affinityPhoto: "affinity_photo.png",
+		ajax: "ajax.png",
+		android: "android.png",
+		apache: "apache.png",
+		bootstrap: "bootstrap.png",
+		canon: "canon.png",
+		capistrano: "capistrano.png",
+		chrome: "chrome.png",
+		coofee: "coofee.png",
+		docker: "docker.png",
+		duckduckgo: "duckduckgo.png",
+		elasticsearch: "elasticsearch.png",
+		firefox: "firefox.png",
+		git: "git.png",
+		github: "github.png",
+		gitlab: "gitlab.png",
+		goggleAnalitycs: "goggle_anal.png",
+		google: "google.png",
+		greensock: "greensock.png",
+		groundwork: "groundwork.png",
+		gulp: "gulp.png",
+		gumby: "gumby.png",
+		html: "html.png",
+		javascript: "javascript.png",
+		joomla: "joomla.png",
+		jquery: "jquery.png",
+		magento: "magento.png",
+		mariadb: "mariadb.png",
+		mongodb: "mongodb.png",
+		mysql: "mysql.png",
+		nginx: "nginx.png",
+		nodejs: "nodejs.png",
+		openproject: "openproject.png",
+		openzfs: "openzfs.png",
+		photoshop: "photoshop.png",
+		php: "php.png",
+		portainer: "portainer.png",
+		postgresql: "postgresql.png",
+		postman: "postman.png",
+		rails: "rails.png",
+		react: "react.png",
+		redis: "redis.png",
+		rocketchat: "rocketchat.png",
+		ruby: "ruby.png",
+		sass: "sass.png",
+		semrush: "semrush.png",
+		stackoverflow: "stackoverflow.png",
+		sublimetext: "sublimetext.png",
+		susy: "susy.png",
+		telegram: "telegram.png",
+		ubuntu: "ubuntu.png",
+		unsplash: "unsplash.png",
+		webpack: "webpack.png",
+		wekan: "wekan.png",
+		wordpress: "wordpress.png",
+		xen: "xen.png"
+	};
+	
+	exports.default = technologies;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _technology = __webpack_require__(3);
+	
+	var _technology2 = _interopRequireDefault(_technology);
+	
+	var _slot = __webpack_require__(4);
+	
+	var _slot2 = _interopRequireDefault(_slot);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var $ = __webpack_require__(5);
+	
+	var Grid = function () {
+	  function Grid(settings, data, selector) {
+	    _classCallCheck(this, Grid);
+	
+	    this.slotsX = settings.columns;
+	    this.slotsY = settings.rows;
+	    this.totalSlots = this.slotsX * this.slotsY;
+	    this.slotSize = settings.slotSize;
+	    this.tracks = settings.tracks;
+	    this.blanks = settings.blanks;
+	    this.tileBgs = settings.bgs;
+	    this.technologies = [];
+	    this.frame = $("#" + selector);
+	    this.initData(data);
+	    this.checkTracks(this.tracks);
+	    this.checkSlots();
+	    this.virtualGrid = this.createVirtualGrid();
+	    this.initGrid();
+	  }
+	
+	  _createClass(Grid, [{
+	    key: "checkTracks",
+	    value: function checkTracks(tracks) {
+	      if (!tracks) this.buildTracks();else {
+	        for (var i = 0; i < this.tracks.row.length; i++) {
+	          if (this.tracks.row[i] > this.slotsY) console.log("Error in tracks count");
+	        }
+	
+	        for (var j = 0; j < this.tracks.column.length; j++) {
+	          if (this.tracks.column[j] > this.slotsX) console.log("Error in tracks count");
+	        }
+	      }
+	    }
+	  }, {
+	    key: "checkSlots",
+	    value: function checkSlots() {
+	      if (this.totalSlots >= this.technologies.length) console.log("Grid dimensions exceeded available technologies...");
+	    }
+	  }, {
+	    key: "buildTracks",
+	    value: function buildTracks() {
+	      this.tracks = {};
+	      this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
+	      this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsX + 1).keys())).slice(1);
+	    }
+	  }, {
+	    key: "initData",
+	    value: function initData(data) {
+	      var idx = this.blanks + 1;
+	
+	      for (var key in data) {
+	        //add a blank every this.blank iterations
+	        if (idx % this.blanks === 0) this.technologies.push(new _technology2.default("blank", "blank.png"));
+	
+	        var technology = new _technology2.default(key, data[key]);
+	        this.technologies.push(technology);
+	
+	        idx++;
+	      }
+	    }
+	  }, {
+	    key: "createVirtualGrid",
+	    value: function createVirtualGrid() {
+	      var vGrid = [];
+	      var row = [];
+	      var idx = 0;
+	
+	      for (var i = 0; i <= this.slotsY + 1; i++) {
+	        for (var j = 0; j <= this.slotsX + 1; j++) {
+	          var newSlot = new _slot2.default(j, i);
+	          row.push(newSlot);
+	        }
+	
+	        vGrid.push(row);
+	        row = [];
+	      }
+	
+	      return vGrid;
+	    }
+	  }, {
+	    key: "initGrid",
+	    value: function initGrid() {
+	      this.frame.css({ "width": this.slotsX * this.slotSize + "px",
+	        "height": this.slotsY * this.slotSize + "px"
+	      });
+	    }
+	  }, {
+	    key: "returnTech",
+	    value: function returnTech() {
+	      return this.technologies.shift();
+	    }
+	  }]);
+	
+	  return Grid;
+	}();
+	
+	exports.default = Grid;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Technology = function Technology(name, path) {
+		_classCallCheck(this, Technology);
+	
+		this.name = name, this.path = path;
+	};
+	
+	exports.default = Technology;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Slot = function Slot(x, y) {
+		_classCallCheck(this, Slot);
+	
+		this.virtualCoords = { x: x, y: y };
+	};
+	
+	exports.default = Slot;
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -10283,72 +10170,318 @@
 
 
 /***/ }),
-/* 2 */
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var $ = __webpack_require__(5);
+	
+	var GridManager = function () {
+		function GridManager(grid, monitor) {
+			_classCallCheck(this, GridManager);
+	
+			this.grid = grid;
+			this.monitor = monitor;
+			this.locked = false;
+	
+			this.populateGrid();
+		}
+	
+		_createClass(GridManager, [{
+			key: "populateGrid",
+			value: function populateGrid() {
+				for (var i = 1; i < this.grid.virtualGrid.length - 1; i++) {
+					for (var j = 1; j < this.grid.virtualGrid[i].length - 1; j++) {
+						if (this.grid.tracks["row"].includes(i) || this.grid.tracks["column"].includes(j)) {
+							var tech = this.grid.returnTech();
+							var slot = this.grid.virtualGrid[i][j];
+							this.createAndInsertTile(tech, slot);
+						}
+					}
+				}
+			}
+		}, {
+			key: "createAndInsertTile",
+			value: function createAndInsertTile(tech, slot) {
+				var $tile = $(this.buildHtmlObj(tech));
+				$tile.addClass("tile");
+				$tile.css({ "top": (slot.virtualCoords.y - 1) * this.grid.slotSize + "px",
+					"left": (slot.virtualCoords.x - 1) * this.grid.slotSize + "px",
+					"width": this.grid.slotSize + "px",
+					"height": this.grid.slotSize + "px",
+					"background": this.selectTileBg(tech)
+				});
+	
+				slot.technology = tech;
+				slot.tile = $tile;
+				this.grid.frame.append($tile);
+			}
+		}, {
+			key: "buildHtmlObj",
+			value: function buildHtmlObj(tech) {
+				var localPath = "./assets/images/";
+				return "<div><img src='" + localPath + tech.path + "' alt='" + tech.name + "' /></div>";
+			}
+		}, {
+			key: "selectTileBg",
+			value: function selectTileBg(tech) {
+				if (tech.name !== "blank" && this.grid.tileBgs) return this.grid.tileBgs[Math.floor(Math.random() * this.grid.tileBgs.length)];else return "transparent";
+			}
+		}, {
+			key: "prepRow",
+			value: function prepRow(rowIdx, dir) {
+				var row = this.grid.virtualGrid[rowIdx];
+				var slotToFill = dir === "left" ? row[row.length - 1] : row[0];
+				var newTech = this.grid.returnTech();
+	
+				this.createAndInsertTile(newTech, slotToFill);
+				this.moveRow(row, dir);
+			}
+		}, {
+			key: "moveRow",
+			value: function moveRow(row, dir) {
+				var dirFactor = dir === "left" ? -1 : 1;
+				var callback = this.updateRow.bind(this);
+	
+				for (var i = 0; i < row.length; i++) {
+					if (row[i].hasOwnProperty("tile")) {
+						var lastTile = dir === "left" && i >= row.length - 1 || dir === "right" && i >= row.length - 2 ? true : false;
+						var tile = row[i].tile;
+						var oldPosX = parseInt(tile.css("left"));
+						var newPosX = oldPosX + dirFactor * this.grid.slotSize + "px";
+	
+						if (lastTile) tile.animate({ "left": newPosX }).promise().done(function () {
+							callback(row, dir);
+						});else tile.animate({ "left": newPosX });
+					}
+				}
+			}
+		}, {
+			key: "updateRow",
+			value: function updateRow(row, dir) {
+				var startingSlot = dir === "left" ? row[1] : row[row.length - 2];
+				this.grid.technologies.push(startingSlot.technology);
+				this.destroyTile(startingSlot.tile);
+	
+				this.monitor.updateList();
+	
+				if (dir === "left") {
+					for (var i = 1; i < row.length - 1; i++) {
+						row[i].technology = row[i + 1].technology;
+						row[i].tile = row[i + 1].tile;
+					}
+	
+					this.clearSlot(row[row.length - 1]);
+				} else {
+					for (var i = row.length - 2; i >= 1; i--) {
+						row[i].technology = row[i - 1].technology;
+						row[i].tile = row[i - 1].tile;
+					}
+	
+					this.clearSlot(row[0]);
+				}
+	
+				this.endSequence();
+			}
+		}, {
+			key: "prepColumn",
+			value: function prepColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var slotToFill = dir === "up" ? vGrid[vGrid.length - 1][colIdx] : vGrid[0][colIdx];
+				var newTech = this.grid.returnTech();
+				this.createAndInsertTile(newTech, slotToFill);
+				this.moveColumn(colIdx, dir);
+			}
+		}, {
+			key: "moveColumn",
+			value: function moveColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var span = dir === "up" ? vGrid.length - 1 : vGrid.length - 2;
+				var dirFactor = dir === "up" ? -1 : 1;
+	
+				var callback = this.updateColumn.bind(this);
+	
+				for (var i = 0; i < vGrid.length; i++) {
+					if (vGrid[i][colIdx].hasOwnProperty("tile")) {
+						var lastTile = i >= span ? true : false;
+						var tile = vGrid[i][colIdx].tile;
+						var oldPosY = parseInt(tile.css("top"));
+						var newPosY = oldPosY + dirFactor * this.grid.slotSize + "px";
+	
+						if (lastTile) tile.animate({ "top": newPosY }).promise().done(function () {
+							callback(colIdx, dir);
+						});else tile.animate({ "top": newPosY });
+					}
+				}
+			}
+		}, {
+			key: "updateColumn",
+			value: function updateColumn(colIdx, dir) {
+				var vGrid = this.grid.virtualGrid;
+				var slotToDel = dir === "up" ? vGrid[1][colIdx] : vGrid[vGrid.length - 2][colIdx];
+	
+				this.grid.technologies.push(slotToDel.technology);
+				this.destroyTile(slotToDel.tile);
+	
+				this.monitor.updateList();
+	
+				if (dir === "up") {
+					for (var i = 1; i < vGrid.length - 1; i++) {
+						vGrid[i][colIdx].technology = vGrid[i + 1][colIdx].technology;
+						vGrid[i][colIdx].tile = vGrid[i + 1][colIdx].tile;
+					}
+	
+					this.clearSlot(vGrid[vGrid.length - 1][colIdx]);
+				} else {
+					for (var _i = vGrid.length - 2; _i >= 1; _i--) {
+						vGrid[_i][colIdx].technology = vGrid[_i - 1][colIdx].technology;
+						vGrid[_i][colIdx].tile = vGrid[_i - 1][colIdx].tile;
+					}
+	
+					this.clearSlot(vGrid[0][colIdx]);
+				}
+	
+				this.endSequence();
+			}
+		}, {
+			key: "clearSlot",
+			value: function clearSlot(slot) {
+				delete slot.technology;
+				delete slot.tile;
+			}
+		}, {
+			key: "destroyTile",
+			value: function destroyTile(tile) {
+				tile.remove();
+			}
+		}, {
+			key: "endSequence",
+			value: function endSequence() {
+				this.locked = false;
+			}
+		}]);
+	
+		return GridManager;
+	}();
+	
+	exports.default = GridManager;
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports) {
 
 	"use strict";
 	
-	var technologies = {
-		affinityDesign: "affinity_design.png",
-		affinityPhoto: "affinity_photo.png",
-		ajax: "ajax.png",
-		android: "android.png",
-		apache: "apache.png",
-		bootstrap: "bootstrap.png",
-		canon: "canon.png",
-		capistrano: "capistrano.png",
-		chrome: "chrome.png",
-		coofee: "coofee.png",
-		docker: "docker.png",
-		duckduckgo: "duckduckgo.png",
-		elasticsearch: "elasticsearch.png",
-		firefox: "firefox.png",
-		git: "git.png",
-		github: "github.png",
-		gitlab: "gitlab.png",
-		goggleAnalitycs: "goggle_anal.png",
-		google: "google.png",
-		greensock: "greensock.png",
-		groundwork: "groundwork.png",
-		gulp: "gulp.png",
-		gumby: "gumby.png",
-		html: "html.png",
-		javascript: "javascript.png",
-		joomla: "joomla.png",
-		jquery: "jquery.png",
-		magento: "magento.png",
-		mariadb: "mariadb.png",
-		mongodb: "mongodb.png",
-		mysql: "mysql.png",
-		nginx: "nginx.png",
-		nodejs: "nodejs.png",
-		openproject: "openproject.png",
-		openzfs: "openzfs.png",
-		photoshop: "photoshop.png",
-		php: "php.png",
-		portainer: "portainer.png",
-		postgresql: "postgresql.png",
-		postman: "postman.png",
-		rails: "rails.png",
-		react: "react.png",
-		redis: "redis.png",
-		rocketchat: "rocketchat.png",
-		ruby: "ruby.png",
-		sass: "sass.png",
-		semrush: "semrush.png",
-		stackoverflow: "stackoverflow.png",
-		sublimetext: "sublimetext.png",
-		susy: "susy.png",
-		telegram: "telegram.png",
-		ubuntu: "ubuntu.png",
-		unsplash: "unsplash.png",
-		webpack: "webpack.png",
-		wekan: "wekan.png",
-		wordpress: "wordpress.png",
-		xen: "xen.png"
-	};
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
 	
-	module.exports = technologies;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var GridController = function () {
+		function GridController(gridMan) {
+			_classCallCheck(this, GridController);
+	
+			this.manager = gridMan;
+			this.grid = this.manager.grid;
+	
+			this.ACTION_PARAMS = {
+				last: null,
+				0: { action: "row", lastTarget: null, direction: { 0: "left", 1: "right", last: null } },
+				1: { action: "column", lastTarget: null, direction: { 0: "up", 1: "down", last: null } }
+			};
+		}
+	
+		_createClass(GridController, [{
+			key: "startAction",
+			value: function startAction(action, target, dir) {
+				if (action === "row") this.manager.prepRow(target, dir);else this.manager.prepColumn(target, dir);
+			}
+		}, {
+			key: "randomizer",
+			value: function randomizer() {
+				var actionIdx, directionIdx, action, targetRange, targetIdx, target, direction;
+				var tracks = this.grid.tracks;
+	
+				actionIdx = this.returnRandomInRange(0, 1);
+				direction = this.ACTION_PARAMS[actionIdx].direction[this.returnRandomInRange(0, 1)];
+				action = this.ACTION_PARAMS[actionIdx].action;
+				targetRange = tracks[action].length - 1;
+				targetIdx = this.returnRandomInRange(0, targetRange);
+				target = tracks[action][targetIdx];
+	
+				if (action === this.ACTION_PARAMS.last && target === this.ACTION_PARAMS[actionIdx].lastTarget) {
+					this.randomizer();
+					return;
+				}
+	
+				this.ACTION_PARAMS.last = action;
+				this.ACTION_PARAMS[actionIdx].lastTarget = target;
+	
+				this.startAction(action, target, direction);
+			}
+		}, {
+			key: "returnRandomInRange",
+			value: function returnRandomInRange(min, max) {
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+		}]);
+	
+		return GridController;
+	}();
+	
+	exports.default = GridController;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Monitor = function () {
+		function Monitor(listEl, list) {
+			_classCallCheck(this, Monitor);
+	
+			this.listElement = listEl;
+			this.list = list;
+		}
+	
+		_createClass(Monitor, [{
+			key: "updateList",
+			value: function updateList() {
+				this.listElement.empty();
+	
+				for (var i = 0; i < this.list.length; i++) {
+					var listItem = this.list[i].name;
+					var pathToItem = this.list[i].path;
+					this.listElement.prepend("<li><img src='./assets/images/" + pathToItem + "' /> " + listItem + "</li>");
+				}
+			}
+		}]);
+	
+		return Monitor;
+	}();
+	
+	exports.default = Monitor;
 
 /***/ })
 /******/ ]);

@@ -43,6 +43,9 @@ body, html{
 #monitor{
 	width: 150px;
 	height: 100%;
+	display: flex;
+	flex-flow: column;
+	justify-content: center;
 	overflow: scroll;
 	padding: 1rem;
 	background: rgba(0, 0, 0, 0.4);
