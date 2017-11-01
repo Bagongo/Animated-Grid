@@ -66,13 +66,14 @@
 	};
 	
 	var Grid = function () {
-		function Grid(settings, data) {
+		function Grid(settings, data, blanks) {
 			_classCallCheck(this, Grid);
 	
 			this.slotsX = settings.columns;
 			this.slotsY = settings.rows;
 			this.totalSlots = this.slotsX * this.slotsY;
 			this.slotSize = settings.slotSize;
+			this.blanks = blanks;
 			this.technologies = [];
 			this.initData(data);
 			this.checkSettings();
@@ -91,9 +92,16 @@
 		}, {
 			key: "initData",
 			value: function initData(data) {
+				var idx = this.blanks + 1;
+	
 				for (var key in data) {
+					//add a blank every this.blank iterations
+					if (idx % this.blanks === 0) this.technologies.push(new Technology("blank", "blank.png"));
+	
 					var technology = new Technology(key, data[key]);
 					this.technologies.push(technology);
+	
+					idx++;
 				}
 			}
 		}, {
@@ -336,7 +344,7 @@
 			}
 		}, {
 			key: "randomizer",
-			value: function randomizer(random) {
+			value: function randomizer(random, blank) {
 				var actionIdx, directionIdx, range, action, target, direction;
 	
 				if (random) {
@@ -403,22 +411,31 @@
 	
 		var settings = { rows: 5, columns: 7, slotSize: 75 };
 	
-		var mainGrid = new Grid(settings, technologies);
-		var monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
-		var gridManager = new GridManager(mainGrid, 'main-grid', monitor);
-		var gridController = new GridController(gridManager, false, false);
+		var mainGrid, monitor, gridManager, gridController;
 	
-		$("#go").on("click", function (e) {
-			e.preventDefault();
+		$("#create-grid").on("click", function (event) {
+			event.preventDefault();
+	
+			$(".tile").remove();
+	
+			mainGrid = new Grid(settings, technologies, $("#blanks").val());
+			monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
+			gridManager = new GridManager(mainGrid, 'main-grid', monitor);
+			gridController = new GridController(gridManager);
+	
+			monitor.updateList();
+		});
+	
+		$("#go").on("click", function (event) {
+			event.preventDefault();
 	
 			var random = document.getElementById("randomize").checked;
+	
 			if (!gridController.manager.locked) {
 				gridController.randomizer(random);
 				gridController.manager.locked = true;
 			}
 		});
-	
-		monitor.updateList();
 	});
 
 /***/ }),
