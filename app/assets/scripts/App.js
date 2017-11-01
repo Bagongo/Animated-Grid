@@ -21,7 +21,8 @@ class Grid {
     this.slotsY = settings.rows;
     this.totalSlots = this.slotsX * this.slotsY;
     this.slotSize = settings.slotSize;
-    this.blanks = blanks;
+    this.blanks = settings.blanks;
+    this.tileBgs = settings.bgs;
     this.technologies = [];
     this.initData(data);
     this.checkSettings();
@@ -122,7 +123,7 @@ class GridManager {
 					"left": (slot.virtualCoords.x - 1) * this.grid.slotSize + "px",
 					"width": this.grid.slotSize + "px", 
 					"height": this.grid.slotSize + "px",
-					"background": tech.path
+					"background": this.selectTileBg(tech)
 		});
 
 		slot.technology = tech;
@@ -134,6 +135,14 @@ class GridManager {
 	{
 		var localPath = "./assets/images/";
 		return "<div><img src='" + localPath + tech.path + "' alt='" + tech.name + "' /></div>";
+	}
+
+	selectTileBg(tech)
+	{
+		if(tech.name !== "blank" && this.grid.tileBgs)
+			return this.grid.tileBgs[Math.floor(Math.random() * this.grid.tileBgs.length)];
+		else 
+			return "transparent";
 	}
 
 	prepRow(rowIdx, dir)
@@ -373,8 +382,6 @@ class Monitor{
 
 document.addEventListener('DOMContentLoaded', function () {
 
-	let settings = {rows: 5, columns: 7, slotSize: 75};
-
 	var mainGrid, monitor, gridManager, gridController;
 
 	$("#create-grid").on("click", function(event){
@@ -382,7 +389,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		$(".tile").remove();
 
-		mainGrid = new Grid(settings, technologies, $("#blanks").val());
+		let settings = {rows: 5, 
+						columns: 7,
+						slotSize: 75,
+						blanks: $("#blanks").val(), 
+						bgs: document.getElementById("tiled").checked? ["darkgrey", "grey", "lightgrey"] : null
+					};
+
+		mainGrid = new Grid(settings, technologies);
 		monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
 		gridManager = new GridManager(mainGrid, 'main-grid', monitor);
 		gridController = new GridController(gridManager);
