@@ -79,11 +79,11 @@
 			clearInterval(interval);
 			$(".tile").remove();
 	
-			var settings = { rows: 5,
-				columns: 10,
+			var settings = { rows: 4,
+				columns: 8,
 				slotSize: 75,
 				blanks: $("#blanks").val(),
-				bgs: document.getElementById("tiled").checked ? ["darkgrey", "grey", "lightgrey"] : null,
+				bgs: document.getElementById("tiled").checked ? ["white", "#F6F7FB", "#EFF0F4"] : null,
 				tracks: null
 			};
 	
@@ -190,7 +190,7 @@
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -212,99 +212,99 @@
 	var $ = __webpack_require__(5);
 	
 	var Grid = function () {
-	  function Grid(settings, data, selector) {
-	    _classCallCheck(this, Grid);
+	    function Grid(settings, data, selector) {
+	        _classCallCheck(this, Grid);
 	
-	    this.slotsX = settings.columns;
-	    this.slotsY = settings.rows;
-	    this.totalSlots = this.slotsX * this.slotsY;
-	    this.slotSize = settings.slotSize;
-	    this.tracks = settings.tracks;
-	    this.blanks = settings.blanks;
-	    this.tileBgs = settings.bgs;
-	    this.technologies = [];
-	    this.frame = $("#" + selector);
-	    this.initData(data);
-	    this.checkTracks(this.tracks);
-	    this.checkSlots();
-	    this.virtualGrid = this.createVirtualGrid();
-	    this.initGrid();
-	  }
+	        this.slotsX = settings.columns;
+	        this.slotsY = settings.rows;
+	        this.slotSize = settings.slotSize;
+	        this.tracks = settings.tracks;
+	        this.blanks = settings.blanks;
+	        this.tileBgs = settings.bgs;
+	        this.technologies = [];
+	        this.frame = $("#" + selector);
+	        this.initData(data);
+	        this.checkTracks(this.tracks);
+	        this.checkSlots();
+	        this.virtualGrid = this.createVirtualGrid();
+	        this.initGrid();
+	    }
 	
-	  _createClass(Grid, [{
-	    key: "checkTracks",
-	    value: function checkTracks(tracks) {
-	      if (!tracks) this.buildTracks();else {
-	        for (var i = 0; i < this.tracks.row.length; i++) {
-	          if (this.tracks.row[i] > this.slotsY) console.log("Error in tracks count");
+	    _createClass(Grid, [{
+	        key: "checkTracks",
+	        value: function checkTracks(tracks) {
+	            if (!tracks) this.buildTracks();else {
+	                for (var i = 0; i < this.tracks.row.length; i++) {
+	                    if (this.tracks.row[i] > this.slotsY) console.error("Error in tracks count");
+	                }
+	
+	                for (var j = 0; j < this.tracks.column.length; j++) {
+	                    if (this.tracks.column[j] > this.slotsX) console.error("Error in tracks count");
+	                }
+	            }
 	        }
-	
-	        for (var j = 0; j < this.tracks.column.length; j++) {
-	          if (this.tracks.column[j] > this.slotsX) console.log("Error in tracks count");
+	    }, {
+	        key: "checkSlots",
+	        value: function checkSlots() {
+	            var totalSlots = this.tracks.row.length * this.slotsY + this.tracks.column.length * this.slotsX;
+	            if (totalSlots >= this.technologies.length) console.error("Grid dimensions exceeded available technologies...");
 	        }
-	      }
-	    }
-	  }, {
-	    key: "checkSlots",
-	    value: function checkSlots() {
-	      if (this.totalSlots >= this.technologies.length) console.log("Grid dimensions exceeded available technologies...");
-	    }
-	  }, {
-	    key: "buildTracks",
-	    value: function buildTracks() {
-	      this.tracks = {};
-	      this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
-	      this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsX + 1).keys())).slice(1);
-	    }
-	  }, {
-	    key: "initData",
-	    value: function initData(data) {
-	      var idx = this.blanks + 1;
-	
-	      for (var key in data) {
-	        //add a blank every this.blank iterations
-	        if (idx % this.blanks === 0) this.technologies.push(new _technology2.default("blank", "blank.png"));
-	
-	        var technology = new _technology2.default(key, data[key]);
-	        this.technologies.push(technology);
-	
-	        idx++;
-	      }
-	    }
-	  }, {
-	    key: "createVirtualGrid",
-	    value: function createVirtualGrid() {
-	      var vGrid = [];
-	      var row = [];
-	      var idx = 0;
-	
-	      for (var i = 0; i <= this.slotsY + 1; i++) {
-	        for (var j = 0; j <= this.slotsX + 1; j++) {
-	          var newSlot = new _slot2.default(j, i);
-	          row.push(newSlot);
+	    }, {
+	        key: "buildTracks",
+	        value: function buildTracks() {
+	            this.tracks = {};
+	            this.tracks.row = [].concat(_toConsumableArray(Array(this.slotsY + 1).keys())).slice(1);
+	            this.tracks.column = [].concat(_toConsumableArray(Array(this.slotsX + 1).keys())).slice(1);
 	        }
+	    }, {
+	        key: "initData",
+	        value: function initData(data) {
+	            var idx = this.blanks + 1;
 	
-	        vGrid.push(row);
-	        row = [];
-	      }
+	            for (var key in data) {
+	                //add a blank every this.blank iterations
+	                if (idx % this.blanks === 0) this.technologies.push(new _technology2.default("blank", "blank.png"));
 	
-	      return vGrid;
-	    }
-	  }, {
-	    key: "initGrid",
-	    value: function initGrid() {
-	      this.frame.css({ "width": this.slotsX * this.slotSize + "px",
-	        "height": this.slotsY * this.slotSize + "px"
-	      });
-	    }
-	  }, {
-	    key: "returnTech",
-	    value: function returnTech() {
-	      return this.technologies.shift();
-	    }
-	  }]);
+	                var technology = new _technology2.default(key, data[key]);
+	                this.technologies.push(technology);
 	
-	  return Grid;
+	                idx++;
+	            }
+	        }
+	    }, {
+	        key: "createVirtualGrid",
+	        value: function createVirtualGrid() {
+	            var vGrid = [];
+	            var row = [];
+	            var idx = 0;
+	
+	            for (var i = 0; i <= this.slotsY + 1; i++) {
+	                for (var j = 0; j <= this.slotsX + 1; j++) {
+	                    var newSlot = new _slot2.default(j, i);
+	                    row.push(newSlot);
+	                }
+	
+	                vGrid.push(row);
+	                row = [];
+	            }
+	
+	            return vGrid;
+	        }
+	    }, {
+	        key: "initGrid",
+	        value: function initGrid() {
+	            this.frame.css({ "width": this.slotsX * this.slotSize + "px",
+	                "height": this.slotsY * this.slotSize + "px"
+	            });
+	        }
+	    }, {
+	        key: "returnTech",
+	        value: function returnTech() {
+	            return this.technologies.shift();
+	        }
+	    }]);
+	
+	    return Grid;
 	}();
 	
 	exports.default = Grid;

@@ -15,11 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		clearInterval(interval);
 		$(".tile").remove();
 
-		let settings = {rows: 5, 
-						columns: 10,
+		let settings = {rows: 4, 
+						columns: 8,
 						slotSize: 75,
 						blanks: $("#blanks").val(), 
-						bgs: document.getElementById("tiled").checked? ["darkgrey", "grey", "lightgrey"] : null,
+						bgs: document.getElementById("tiled").checked? ["white", "#F6F7FB", "#EFF0F4"] : null,
 						tracks: null
 					};
 

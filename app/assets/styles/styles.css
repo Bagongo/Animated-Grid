@@ -17,14 +17,18 @@ body, html{
 	align-items: center;
 }
 
+#grid-container{
+	/* perspective: 1000px; */
+}
+
 #main-grid{
 	position: relative;
 	overflow: hidden;
-	background: rgba(255, 255, 255, 0.4);
-/* 	background: white;
- */	box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-/* 	border: 1px solid black;
- */}
+ 	/* background: rgba(255, 255, 255, 0.4); */
+ 	/* box-shadow: 0 0 8px rgba(0, 0, 0, 0.5); */
+	/* border: 1px solid black; */
+	/* transform: rotateY(50deg); */
+}
 
 .tile{
 	position: absolute;
@@ -33,8 +37,8 @@ body, html{
 	justify-content: center;
 	align-items: center;
 	padding: 15px;
-/* 	border: 1px solid black;
- */}
+	/*border: 1px solid #E9E9E9;*/
+}
 
 .tile img{
 	width: 100%;
@@ -96,4 +100,3 @@ body, html{
 .btn:focus{
 	outline: none;
 }
-
