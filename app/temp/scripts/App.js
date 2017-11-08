@@ -87,8 +87,7 @@
 				tracks: null
 			};
 	
-			mainGrid = new _grid2.default(settings, 'main-grid');
-			mainGrid.initData(_technologies2.default);
+			mainGrid = new _grid2.default(settings, 'main-grid', _technologies2.default);
 			monitor = new _monitor2.default($("#monitor > ul"), mainGrid.technologies);
 			gridManager = new _gridManager2.default(mainGrid, monitor);
 			gridController = new _gridController2.default(gridManager);
@@ -213,7 +212,7 @@
 	var $ = __webpack_require__(5);
 	
 	var Grid = function () {
-	    function Grid(settings, selector) {
+	    function Grid(settings, selector, technologies) {
 	        _classCallCheck(this, Grid);
 	
 	        this.slotsX = settings.columns;
@@ -224,10 +223,11 @@
 	        this.tileBgs = settings.bgs;
 	        this.technologies = [];
 	        this.frame = $("#" + selector);
-	        this.checkTracks(this.tracks);
-	        this.checkSlots();
+	        this.setFrame();
 	        this.virtualGrid = this.createVirtualGrid();
-	        this.initGrid();
+	        this.checkTracks(this.tracks);
+	        this.initData(technologies);
+	        this.checkSlots();
 	    }
 	
 	    _createClass(Grid, [{
@@ -246,7 +246,7 @@
 	    }, {
 	        key: "checkSlots",
 	        value: function checkSlots() {
-	            var totalSlots = this.tracks.row.length * this.slotsY + this.tracks.column.length * this.slotsX;
+	            var totalSlots = this.tracks.row.length * this.slotsX + this.tracks.column.length * this.slotsY - this.tracks.row.length * this.tracks.column.length;
 	            if (totalSlots >= this.technologies.length) console.error("Grid dimensions exceeded available technologies...");
 	        }
 	    }, {
@@ -291,8 +291,8 @@
 	            return vGrid;
 	        }
 	    }, {
-	        key: "initGrid",
-	        value: function initGrid() {
+	        key: "setFrame",
+	        value: function setFrame() {
 	            this.frame.css({ "width": this.slotsX * this.slotSize + "px",
 	                "height": this.slotsY * this.slotSize + "px"
 	            });

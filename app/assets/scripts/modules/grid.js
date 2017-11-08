@@ -4,7 +4,7 @@ import Slot from "./slot";
 
 class Grid {
 
-    constructor (settings, selector) {    
+    constructor (settings, selector, technologies) {    
         this.slotsX = settings.columns;
         this.slotsY = settings.rows;
         this.slotSize = settings.slotSize;
@@ -13,10 +13,11 @@ class Grid {
         this.tileBgs = settings.bgs;
         this.technologies = [];
         this.frame = $("#" + selector);
-        this.checkTracks(this.tracks);
-        this.checkSlots();
+        this.setFrame();
         this.virtualGrid = this.createVirtualGrid();
-        this.initGrid();
+        this.checkTracks(this.tracks);
+        this.initData(technologies);
+        this.checkSlots();
     }
 
     checkTracks(tracks)
@@ -41,7 +42,7 @@ class Grid {
 
     checkSlots()
     {
-        var totalSlots = this.tracks.row.length * this.slotsY + this.tracks.column.length * this.slotsX;
+        var totalSlots = (this.tracks.row.length * this.slotsX) + (this.tracks.column.length * this.slotsY) - (this.tracks.row.length * this.tracks.column.length);
         if(totalSlots >= this.technologies.length)
             console.error("Grid dimensions exceeded available technologies...");
     }
@@ -90,7 +91,7 @@ class Grid {
         return vGrid;
     }
 
-    initGrid()
+    setFrame()
     {
         this.frame.css({"width": (this.slotsX * this.slotSize) + "px",
                         "height": (this.slotsY * this.slotSize) + "px"
