@@ -17,16 +17,17 @@ class GridManager {
 			for(let j=1; j < this.grid.virtualGrid[i].length - 1; j++)
 			{
 				if(this.grid.tracks["row"].includes(i) || this.grid.tracks["column"].includes(j))
-				{   var tech = this.grid.returnTech();
+				{   
 					var slot = this.grid.virtualGrid[i][j];
-					this.createAndInsertTile(tech, slot);				
+					this.createAndInsertTile(slot);				
 				}
 			}
 		}
 	}
 
-	createAndInsertTile(tech, slot)
+	createAndInsertTile(slot)
 	{
+		var tech = this.grid.returnTech();
 		var $tile = $(this.buildHtmlObj(tech));
 		$tile.addClass("tile");
 		$tile.css({ "top": (slot.virtualCoords.y - 1) * this.grid.slotSize + "px", 
@@ -58,10 +59,8 @@ class GridManager {
 	prepRow(rowIdx, dir)
 	{
 		var row = this.grid.virtualGrid[rowIdx];
-		var slotToFill = dir === "left" ? row[row.length - 1] : row[0];
-		var newTech = this.grid.returnTech();
-		
-		this.createAndInsertTile(newTech, slotToFill);
+		var slotToFill = dir === "left" ? row[row.length - 1] : row[0];		
+		this.createAndInsertTile(slotToFill);
 		this.moveRow(row, dir);
 	}
 
@@ -125,8 +124,7 @@ class GridManager {
 	{
 		var vGrid = this.grid.virtualGrid;
 		var slotToFill = dir === "up" ? vGrid[vGrid.length - 1][colIdx] : vGrid[0][colIdx];
-		var newTech = this.grid.returnTech();
-		this.createAndInsertTile(newTech, slotToFill);
+		this.createAndInsertTile(slotToFill);
 		this.moveColumn(colIdx, dir);
 	}
 
