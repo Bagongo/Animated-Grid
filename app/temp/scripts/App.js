@@ -87,7 +87,8 @@
 				tracks: null
 			};
 	
-			mainGrid = new _grid2.default(settings, _technologies2.default, 'main-grid');
+			mainGrid = new _grid2.default(settings, 'main-grid');
+			mainGrid.initData(_technologies2.default);
 			monitor = new _monitor2.default($("#monitor > ul"), mainGrid.technologies);
 			gridManager = new _gridManager2.default(mainGrid, monitor);
 			gridController = new _gridController2.default(gridManager);
@@ -212,7 +213,7 @@
 	var $ = __webpack_require__(5);
 	
 	var Grid = function () {
-	    function Grid(settings, data, selector) {
+	    function Grid(settings, selector) {
 	        _classCallCheck(this, Grid);
 	
 	        this.slotsX = settings.columns;
@@ -223,7 +224,6 @@
 	        this.tileBgs = settings.bgs;
 	        this.technologies = [];
 	        this.frame = $("#" + selector);
-	        this.initData(data);
 	        this.checkTracks(this.tracks);
 	        this.checkSlots();
 	        this.virtualGrid = this.createVirtualGrid();

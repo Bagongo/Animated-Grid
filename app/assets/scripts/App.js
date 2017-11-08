@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
 						tracks: null
 					};
 
-		mainGrid = new Grid(settings, technologies, 'main-grid');
+		mainGrid = new Grid(settings, 'main-grid');
+		mainGrid.initData(technologies)
 		monitor = new Monitor($("#monitor > ul"), mainGrid.technologies);
 		gridManager = new GridManager(mainGrid, monitor);
 		gridController = new GridController(gridManager);

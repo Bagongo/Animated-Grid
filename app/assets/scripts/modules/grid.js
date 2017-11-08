@@ -4,7 +4,7 @@ import Slot from "./slot";
 
 class Grid {
 
-    constructor (settings, data, selector) {    
+    constructor (settings, selector) {    
         this.slotsX = settings.columns;
         this.slotsY = settings.rows;
         this.slotSize = settings.slotSize;
@@ -13,7 +13,6 @@ class Grid {
         this.tileBgs = settings.bgs;
         this.technologies = [];
         this.frame = $("#" + selector);
-        this.initData(data);
         this.checkTracks(this.tracks);
         this.checkSlots();
         this.virtualGrid = this.createVirtualGrid();
